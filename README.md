@@ -22,6 +22,8 @@ Or alias it:
 alias stacksmith='bash /path/to/stacksmith.sh'
 ```
 
+---
+
 ## ⚙️ Usage
 
 ### 🪵 Create a new stacked branch
@@ -74,6 +76,8 @@ Handles first-time push & force push safely.
 stacksmith graph
 ```
 
+---
+
 ## 🤝 Contribution
 
 Contributions are welcome! ✨
@@ -82,3 +86,14 @@ Contributions are welcome! ✨
 3. Commit your changes (git commit -m 'feat: add amazing feature')
 4. Push to the branch (git push)
 5. Open a pull request
+
+---
+
+## 📢 Feedback
+
+Got ideas, bugs, or thoughts? Love a bad artisan pun? Open an issue or reach out!
+Your feedback makes this tool better (and funnier). 😎
+
+---
+
+Crafted with love, by artisans of the stack. 🩵✨
