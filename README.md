@@ -134,6 +134,8 @@ Or alias it:
 alias stacksmith='bash /path/to/stacksmith.sh'
 ```
 
+If you run into trouble adding `stacksmith` to your path, [here's](https://specifications.freedesktop.org/basedir-spec/latest/) an excellent and helpful article recommended by my friend [Osaro](https://github.com/osaroadade) 🙂
+
 ---
 
 ## ⚙️ Usage
