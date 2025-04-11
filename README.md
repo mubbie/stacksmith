@@ -48,7 +48,7 @@ BUT managing these stacks manually with plain Git is tedious (See existing recom
 Yes! There are great tools out there like:
 
 - [Graphite](https://graphite.dev/) — excellent, powerful, but heavily tied to GitHub and its own ecosystem.
-- [GitButler](https://gitbutler.com/) — super promising, but still evolving and platform-dependent.
+- [GitButler](https://gitbutler.com/) — super promising, but still evolving and platform-dependent. Here is a good demo video: [Stacked Branches Demo](https://www.youtube.com/watch?v=fkka4Ih5GSM&t=301s).
 - GitHub's own support for stacked PRs — only partial and GitHub-specific.
 
 But sometimes...
