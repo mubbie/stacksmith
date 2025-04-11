@@ -24,7 +24,7 @@ Option 2 → Many PRs but blocked 😩
 Stacksmith → Many PRs. Keep shipping 🚀
 ```
 
-**Enter Stacked PRs: The Best of Both Worlds 🚂**
+### Enter Stacked PRs: The Best of Both Worlds 🚂
 
 Stacked PRs let you:
 
@@ -43,7 +43,7 @@ BUT managing these stacks manually with plain Git is tedious (See existing recom
 - Force pushing without messing things up
 - Retargeting PRs
 
-**Aren't there tools for this already? 🤓**
+### Aren't there tools for this already? 🤓
 
 Yes! There are great tools out there like:
 
@@ -67,7 +67,7 @@ A tiny, dead-simple, artisan-crafted bash tool for anyone who wants the superpow
 
 > Stacksmith helps you manage your local branches beautifully. But your PRs will still need to be created, managed, and merged manually on your Git hosting platform (Azure DevOps, GitHub, GitLab, Bitbucket, etc).
 
-### PR Lifecycle with Stacksmith:
+### PR Lifecycle with Stacksmith
 
 - Create your stacked branches locally with `stacksmith stack`
 - Push them with `stacksmith push`
@@ -78,7 +78,7 @@ A tiny, dead-simple, artisan-crafted bash tool for anyone who wants the superpow
   - Retarget the PR in your Git platform to point to `main`
   - Push again with `stacksmith push`
 
-### Pro Tip:
+### Pro Tip
 
 Use `stacksmith sync` to quickly rebase and update a full stack when many PRs have merged.
 
