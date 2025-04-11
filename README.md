@@ -49,6 +49,7 @@ Yes! There are great tools out there like:
 
 - [Graphite](https://graphite.dev/) — excellent, powerful, but heavily tied to GitHub and its own ecosystem.
 - [GitButler](https://gitbutler.com/) — super promising, but still evolving and platform-dependent. Here is a good demo video: [Stacked Branches Demo](https://www.youtube.com/watch?v=fkka4Ih5GSM&t=301s).
+- [GitTown](https://www.git-town.com/stacked-changes.html) - very developer-friendly CLI tool for managing stacked branches with clean automation around syncing and shipping changes. Requires installing Git Town but works across platforms and Git hosts (including Azure DevOps).
 - GitHub's own support for stacked PRs — only partial and GitHub-specific.
 
 But sometimes...
