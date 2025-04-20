@@ -6,15 +6,15 @@ before:
   hooks:
     - go mod tidy
     - go generate ./...
-    - mkdir -p ./build/completions
-    - go run main.go completion bash > ./build/completions/stacksmith.bash
-    - go run main.go completion zsh > ./build/completions/stacksmith.zsh
-    - go run main.go completion fish > ./build/completions/stacksmith.fish
-    - ls -la ./build/completions/
+    - mkdir -p build/completions
+    - go run main.go completion bash > build/completions/stacksmith.bash
+    - go run main.go completion zsh > build/completions/stacksmith.zsh
+    - go run main.go completion fish > build/completions/stacksmith.fish
+    - ls -la build/completions
 
 builds:
   - id: stacksmith
-    main: ./main.go
+    main: main.go
     binary: stacksmith
     env:
       - CGO_ENABLED=0
@@ -40,12 +40,12 @@ archives:
       - README.md
       - LICENSE
       - scripts/stacksmith-lite.sh
-      - ./build/completions/stacksmith.bash
-      - ./build/completions/stacksmith.zsh
-      - ./build/completions/stacksmith.fish
+      - build/completions/stacksmith.bash
+      - build/completions/stacksmith.zsh
+      - build/completions/stacksmith.fish
     format_overrides:
       - goos: windows
-        formats: zip
+        format: zip
 
 nfpms:
   - id: stacksmith-pkg
@@ -69,9 +69,9 @@ brews:
       system "#{bin}/stacksmith", "--help"
     install: |
       bin.install "stacksmith"
-      bash_completion.install "./build/completions/stacksmith.bash"
-      zsh_completion.install "./build/completions/stacksmith.zsh"
-      fish_completion.install "./build/completions/stacksmith.fish"
+      bash_completion.install "build/completions/stacksmith.bash"
+      zsh_completion.install "build/completions/stacksmith.zsh"
+      fish_completion.install "build/completions/stacksmith.fish"
     caveats: |
       To enable completions:
 
