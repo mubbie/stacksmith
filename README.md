@@ -15,7 +15,7 @@
 </p>
 
 > Ultralight Artisan Git Stacking Tool
-> *Forgive the corny jokes — staying on brand 🧑🏾‍🏭*
+> (*Forgive the corny jokes — staying on brand 🧑🏾‍🏭*)
 
 Stacksmith is your terminal blacksmithing forge for managing stacked pull branches and pull requests using **vanilla Git** 🌳
 
