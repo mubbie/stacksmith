@@ -175,7 +175,7 @@ jobs:
           git commit -m "Add Stacksmith ${VERSION}"
           
           # Push to fork
-          git push -u origin stacksmith-${VERSION}
+          git push -u origin stacksmith-${VERSION} --force
           
           # Create PR using curl
           curl -X POST \
