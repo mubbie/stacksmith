@@ -26,13 +26,6 @@ jobs:
         id: get_version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Generate completions
-        run: |
-          mkdir -p completions
-          go run main.go completion bash > completions/stacksmith.bash
-          go run main.go completion zsh > completions/stacksmith.zsh
-          go run main.go completion fish > completions/stacksmith.fish
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
