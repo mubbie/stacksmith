@@ -15,12 +15,13 @@ UserInfoPage=yes
 ShowTasksTreeLines=yes
 OutputDir=Output
 OutputBaseFilename=stacksmith-setup
+; If icon.ico exists, use it, otherwise comment this line out
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
 
 [Files]
-Source: "..\artifact\stacksmith.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "artifact\stacksmith.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Stacksmith (CLI)"; Filename: "{app}\stacksmith.exe"
@@ -33,12 +34,10 @@ Filename: "{app}\stacksmith.exe"; Description: "Run Stacksmith"; Flags: postinst
 Type: files; Name: "{app}\stacksmith.exe"
 
 [Tasks]
-Name: addtopath; Description: "Add Stacksmith to system PATH"; \
-    GroupDescription: "Additional Options:"; Flags: unchecked
+Name: addtopath; Description: "Add Stacksmith to system PATH"; GroupDescription: "Additional Options:"; Flags: unchecked
 
 [Registry]
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
-    ValueType: expandsz; ValueName: "Path"; ValueData: "{app}"; Flags: preservestringtype uninsdeletevalue; Tasks: addtopath
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Check: NeedsAddPath('{app}'); Tasks: addtopath
 
 [Code]
 const
@@ -68,4 +67,16 @@ begin
     if WizardIsTaskSelected('addtopath') then
       RefreshEnvironment;
   end;
+end;
+
+function NeedsAddPath(Param: string): boolean;
+var
+  OrigPath: string;
+begin
+  if not RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
+  then begin
+    Result := True;
+    exit;
+  end;
+  Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
 end;
