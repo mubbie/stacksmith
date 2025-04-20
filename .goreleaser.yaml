@@ -4,17 +4,20 @@ project_name: stacksmith
 
 before:
   hooks:
-    - go mod tidy
-    - go generate ./...
-    - mkdir -p build/completions
-    - go run main.go completion bash > build/completions/stacksmith.bash
-    - go run main.go completion zsh > build/completions/stacksmith.zsh
-    - go run main.go completion fish > build/completions/stacksmith.fish
-    - ls -la build/completions
+    - |
+      bash -c '
+        go mod tidy
+        go generate ./...
+        mkdir -p build/completions
+        go run main.go completion bash > build/completions/stacksmith.bash
+        go run main.go completion zsh > build/completions/stacksmith.zsh
+        go run main.go completion fish > build/completions/stacksmith.fish
+        ls -la build/completions
+      '
 
 builds:
   - id: stacksmith
-    main: main.go
+    main: ./main.go
     binary: stacksmith
     env:
       - CGO_ENABLED=0
@@ -36,14 +39,16 @@ builds:
 archives:
   - id: default
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    format_overrides:
-      - goos: windows
-        formats: zip
     files:
+      - README.md
+      - LICENSE
+      - scripts/stacksmith-lite.sh
       - build/completions/stacksmith.bash
       - build/completions/stacksmith.zsh
       - build/completions/stacksmith.fish
-      - scripts/stacksmith-lite.sh
+    format_overrides:
+      - goos: windows
+        formats: zip
 
 nfpms:
   - id: stacksmith-pkg
@@ -79,6 +84,7 @@ brews:
 
         Zsh:
           autoload -Uz compinit && compinit
+          fpath+=~/.zsh/completion  # if applicable
           compdef _stacksmith stacksmith
 
         Fish:
