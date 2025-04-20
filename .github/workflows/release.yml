@@ -151,4 +151,4 @@ jobs:
             PR created by GitHub Actions.
           branch: stacksmith-${{ needs.goreleaser.outputs.version }}
           base: master
-          repository: microsoft/winget-pkgs
+          push-to-fork: microsoft/winget-pkgs
