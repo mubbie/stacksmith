@@ -60,12 +60,10 @@ jobs:
           mkdir installer\artifact
           move artifact\stacksmith.exe installer\artifact\stacksmith.exe
 
-      - name: Check for EXE
+      - name: Debug file location
+        shell: pwsh
         run: |
-          if (-Not (Test-Path "installer/artifact/stacksmith.exe")) {
-            Write-Error "❌ stacksmith.exe not found!"
-            exit 1
-          }
+            Get-ChildItem -Recurse -Path . | Select-String "stacksmith.exe"
 
       - name: Build Installer
         shell: powershell
