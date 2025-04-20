@@ -3,7 +3,7 @@ package simplemenu
 
 import (
     "fmt"
-    "github.com/mubbie/stacksmith/ui/styles"
+    "github.com/mubbie/stacksmith/internal/ui/styles"
 )
 
 // SelectableList provides a reusable list component

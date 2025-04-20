@@ -28,6 +28,13 @@ build-macos:
 	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o bin/${BINARY_NAME}-darwin-amd64 main.go
 	GOOS=darwin GOARCH=arm64 go build ${LDFLAGS} -o bin/${BINARY_NAME}-darwin-arm64 main.go
 
+.PHONY: generate-completions
+generate-completions:
+	mkdir -p build/completions
+	go run main.go completion bash > build/completions/stacksmith.bash
+	go run main.go completion zsh > build/completions/stacksmith.zsh
+	go run main.go completion fish > build/completions/stacksmith.fish
+
 .PHONY: clean
 clean:
 	rm -rf bin/

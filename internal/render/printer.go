@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mubbie/stacksmith/core"
+	"github.com/mubbie/stacksmith/internal/core"
 )
 
 // Colors for console output

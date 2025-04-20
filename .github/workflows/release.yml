@@ -69,19 +69,19 @@ jobs:
           mkdir -p installer/artifact
           # Copy from extracted directory
           Copy-Item extracted/stacksmith.exe installer/artifact/
-          # Note: installer/setup.iss already exists from the checkout
+          # Note: build/installer/setup.iss already exists from the checkout
 
       - name: Build Installer
         shell: powershell
         run: |
           $env:Path += ";C:\Program Files (x86)\Inno Setup 6"
-          iscc /DMyAppVersion="${{ needs.goreleaser.outputs.version }}" "./installer/setup.iss"
+          iscc /DMyAppVersion="${{ needs.goreleaser.outputs.version }}" "./build/installer/setup.iss"
 
       - name: Upload installer to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ needs.goreleaser.outputs.version }}
-          files: installer/Output/stacksmith-setup.exe
+          files: build/installer/Output/stacksmith-setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

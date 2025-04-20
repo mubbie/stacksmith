@@ -4,7 +4,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mubbie/stacksmith/render"
+	"github.com/mubbie/stacksmith/internal/render"
 	"github.com/spf13/cobra"
 )
 

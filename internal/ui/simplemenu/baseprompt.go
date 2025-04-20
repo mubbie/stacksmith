@@ -1,7 +1,7 @@
 package simplemenu
 
 import (
-	"github.com/mubbie/stacksmith/ui/styles"
+	"github.com/mubbie/stacksmith/internal/ui/styles"
 )
 
 // BasePrompt provides common functionality for all prompts

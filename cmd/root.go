@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mubbie/stacksmith/ui/simplemenu"
+	"github.com/mubbie/stacksmith/internal/ui/simplemenu"
 	"github.com/spf13/cobra"
 )
 

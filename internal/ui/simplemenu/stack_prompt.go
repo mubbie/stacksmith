@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mubbie/stacksmith/ui/styles"
+	"github.com/mubbie/stacksmith/internal/ui/styles"
 )
 
 // StackPromptModel handles user input for the stack command

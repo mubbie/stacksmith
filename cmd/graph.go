@@ -4,9 +4,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mubbie/stacksmith/core"
-	"github.com/mubbie/stacksmith/render"
-	"github.com/spf13/cobra"
+	"github.com/mubbie/stacksmith/internal/core"
+	"github.com/mubbie/stacksmith/internal/render"
+	"github.com/spf13/cobra"	
 )
 
 var graphCmd = &cobra.Command{

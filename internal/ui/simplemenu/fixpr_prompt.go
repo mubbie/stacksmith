@@ -6,8 +6,8 @@ import (
     "strings"
 
     tea "github.com/charmbracelet/bubbletea"
-    "github.com/mubbie/stacksmith/core"
-    "github.com/mubbie/stacksmith/ui/styles"
+    "github.com/mubbie/stacksmith/internal/core"
+    "github.com/mubbie/stacksmith/internal/ui/styles"
 )
 
 type branchSelectionState int
