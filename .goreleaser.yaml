@@ -36,16 +36,14 @@ builds:
 archives:
   - id: default
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    files:
-      - README.md
-      - LICENSE
-      - scripts/stacksmith-lite.sh
-      - build/completions/stacksmith.bash
-      - build/completions/stacksmith.zsh
-      - build/completions/stacksmith.fish
     format_overrides:
       - goos: windows
         formats: zip
+    files:
+      - build/completions/stacksmith.bash
+      - build/completions/stacksmith.zsh
+      - build/completions/stacksmith.fish
+      - scripts/stacksmith-lite.sh
 
 nfpms:
   - id: stacksmith-pkg
@@ -81,7 +79,6 @@ brews:
 
         Zsh:
           autoload -Uz compinit && compinit
-          fpath+=~/.zsh/completion  # if applicable
           compdef _stacksmith stacksmith
 
         Fish:
