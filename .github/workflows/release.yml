@@ -72,8 +72,7 @@ jobs:
           mkdir -p installer/artifact
           # Copy from extracted directory
           Copy-Item extracted/stacksmith.exe installer/artifact/
-          Copy-Item win-installer/setup.iss installer/
-          Copy-Item win-installer/icon.ico installer/ -ErrorAction SilentlyContinue
+          # Note: installer/setup.iss already exists from the checkout
 
       - name: Build Installer
         shell: powershell
