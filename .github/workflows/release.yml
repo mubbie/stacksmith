@@ -140,14 +140,23 @@ jobs:
         run: |
           VERSION=${{ needs.goreleaser.outputs.version }}
           
-          # Log in to GitHub CLI
-          echo "${{ secrets.WINGET_PR_TOKEN }}" | gh auth login --with-token
+          # Unset existing GITHUB_TOKEN to avoid conflicts
+          unset GITHUB_TOKEN
+          
+          # Use custom token with PAT_TOKEN environment variable
+          echo "${{ secrets.WINGET_PR_TOKEN }}" > gh_token.txt
+          gh auth login --with-token < gh_token.txt
+          rm gh_token.txt
           
           # Fork the winget-pkgs repository if needed
           gh repo fork microsoft/winget-pkgs --clone=false || true
           
-          # Clone our fork
-          git clone https://github.com/${{ github.repository_owner }}/winget-pkgs.git
+          # Set up git credentials for HTTPS authentication
+          git config --global credential.helper store
+          echo "https://${{ secrets.WINGET_PR_TOKEN }}@github.com" > ~/.git-credentials
+          
+          # Clone our fork with token in URL for authentication
+          git clone https://x-access-token:${{ secrets.WINGET_PR_TOKEN }}@github.com/${{ github.repository_owner }}/winget-pkgs.git
           cd winget-pkgs
           
           # Create a new branch for the PR
@@ -168,11 +177,11 @@ jobs:
           git commit -m "Add Stacksmith ${VERSION}"
           git push -u origin stacksmith-${VERSION}
           
-          # Create PR
+          # Create PR using GH CLI with explicit token
           gh pr create --repo microsoft/winget-pkgs \
             --title "Add Stacksmith ${VERSION}" \
             --body "Add Stacksmith version ${VERSION} to winget. PR created by GitHub Actions." \
             --head ${{ github.repository_owner }}:stacksmith-${VERSION} \
             --base master
         env:
-          GITHUB_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
