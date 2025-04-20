@@ -1,0 +1,97 @@
+version: 2
+
+project_name: stacksmith
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: stacksmith
+    main: ./main.go
+    binary: stacksmith
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X github.com/mubbie/stacksmith/cmd.Version={{.Version}}
+      - -X github.com/mubbie/stacksmith/cmd.BuildTime={{.Date}}
+
+archives:
+  - id: default
+    formats: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+      - scripts/stacksmith-lite.sh
+      - completions/stacksmith.bash
+      - completions/stacksmith.zsh
+      - completions/stacksmith.fish
+    format_overrides:
+      - goos: windows
+        formats: zip
+
+nfpms:
+  - id: stacksmith-pkg
+    maintainer: Mubbie <you@example.com>
+    description: Ultralight Artisan Git Stacking Tool
+    homepage: https://github.com/mubbie/stacksmith
+    license: MIT
+    formats:
+      - deb
+      - rpm
+
+brews:
+  - name: stacksmith
+    repository:
+      owner: mubbie
+      name: homebrew-tap
+    homepage: https://github.com/mubbie/stacksmith
+    description: Ultralight Artisan Git Stacking Tool
+    license: MIT
+    test: |
+      system "#{bin}/stacksmith", "--help"
+    install: |
+      bin.install "stacksmith"
+      bash_completion.install "completions/stacksmith.bash"
+      zsh_completion.install "completions/stacksmith.zsh"
+      fish_completion.install "completions/stacksmith.fish"
+    caveats: |
+      To enable completions:
+
+        Bash:
+          source $(brew --prefix)/etc/bash_completion
+          source $(brew --prefix)/etc/bash_completion.d/stacksmith.bash
+
+        Zsh:
+          autoload -Uz compinit && compinit
+          fpath+=~/.zsh/completion  # if applicable
+          compdef _stacksmith stacksmith
+
+        Fish:
+          source (brew --prefix)/share/fish/vendor_completions.d/stacksmith.fish
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  footer: |
+    ---
+
+    Released by [GoReleaser](https://goreleaser.com).
