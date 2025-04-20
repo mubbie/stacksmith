@@ -1,8 +1,16 @@
 # Stacksmith
 
 > Ultralight Artisan Git Stacking Tool (Forgive the corny jokes — staying on brand 🧑🏾‍🏭)
+> *Forgive the corny jokes — staying on brand 🧑🏾‍🏭*
 
-A tiny Bash-powered tool for developers managing stacked pull requests using vanilla Git. 🌳
+Stacksmith is your terminal blacksmithing forge for managing stacked pull branches and pull requests using **vanilla Git** 🌳
+
+This repo contains two versions:
+
+| Version             | Description                                         |
+|----------------------|-----------------------------------------------------|
+| `stacksmith-lite.sh` | 🪶 Lightweight Bash script for fast Git stacking    |
+| `stacksmith`         | ⚡ Upcoming Go-powered CLI with rich UI (coming soon) |
 
 ---
 
@@ -24,43 +32,84 @@ Option 2 → Many PRs but blocked 😩
 Stacksmith → Many PRs. Keep shipping 🚀
 ```
 
-### Enter Stacked PRs: The Best of Both Worlds 🚂
+### What Are Stacked PRs? 🚂
 
-Stacked PRs let you:
-
-1. Break your work into smaller, easy-to-review pieces.
-2. Stack branches on top of each other like this:
+Stacked PRs let you break work into small, focused branches — each building on top of the last.
 
 ```text
 main <- PR1 <- PR2 <- PR3 <- PR4 ...
 ```
 
-3. Reviewers get focused diffs. You keep moving fast.
+Each PR targets the previous one, reviewers see small diffs, and you keep moving fast.
 
-BUT managing these stacks manually with plain Git is tedious (See existing recommendations on how to approach it: [Stacked branches with vanilla Git](https://www.codetinkerer.com/2023/10/01/stacked-branches-with-vanilla-git.html), [Stacked branches with vanilla Git - Reddit Thread](https://www.reddit.com/r/programming/comments/16yqfef/stacked_branches_with_vanilla_git/)):
+BUT managing these stacks manually with plain Git is tedious (See: [Stacked branches with vanilla Git](https://www.codetinkerer.com/2023/10/01/stacked-branches-with-vanilla-git.html), [Stacked branches with vanilla Git - Reddit Thread](https://www.reddit.com/r/programming/comments/16yqfef/stacked_branches_with_vanilla_git/)):
 
 - Rebasing every branch on top of the latest
 - Force pushing without messing things up
 - Retargeting PRs
 
-### Aren't there tools for this already? 🤓
+That's where `stacksmith` comes in.
 
-Yes! There are great tools out there like:
+---
 
-- [Graphite](https://graphite.dev/) — excellent, powerful, but heavily tied to GitHub and its own ecosystem.
-- [GitButler](https://gitbutler.com/) — super promising, but still evolving and platform-dependent. Here is a good demo video: [Stacked Branches Demo](https://www.youtube.com/watch?v=fkka4Ih5GSM&t=301s).
-- [GitTown](https://www.git-town.com/stacked-changes.html) - very developer-friendly CLI tool for managing stacked branches with clean automation around syncing and shipping changes. Requires installing Git Town but works across platforms and Git hosts (including Azure DevOps).
-- GitHub's own support for stacked PRs — only partial and GitHub-specific.
+## Stacksmith Lite 🪶
 
-But sometimes...
+`stacksmith-lite.sh` is a zero-installation, dead-simple Bash script for managing stacked branches using **vanilla Git.**
 
-- You want to use plain ol' Git (Turned 20 recently, see interesting interview with the creator of Git and Linux, Linus Torvalds: [Two decades of Git: A conversation with creator Linus Torvalds](https://www.youtube.com/watch?v=sCr_gb8rdEI)
-- You want a tool that's portable, bash-native, no setup, no login, no install headache.
-- You want something that's easy to teach, easy to adopt, works anywhere.
+It works anywhere Git works:
 
-That's what `stacksmith` is for 🧑🏾‍🏭
+- ✅ Local dev
+- ✅ CI environments
+- ✅ Remote VMs
+- ✅ No plugins, no wrappers, no setup
 
-A tiny, dead-simple, artisan-crafted bash tool for anyone who wants the superpower of stacked PRs without the weight of extra platforms or tools.
+### Install Stacksmith Lite 🚀
+
+```bash
+curl -sL https://raw.githubusercontent.com/mubbie/stacksmith/main/scripts/stacksmith-lite.sh -o stacksmith
+chmod +x stacksmith
+sudo mv stacksmith /usr/local/bin/
+```
+
+Or just alias it:
+
+```bash
+alias stacksmith='bash /path/to/stacksmith-lite.sh'
+```
+
+If you run into trouble adding `stacksmith` to your path, [here's](https://specifications.freedesktop.org/basedir-spec/latest/) an excellent and helpful article recommended by my friend [Osaro](https://github.com/osaroadade) 🙂
+
+### Usage ⚙️
+
+#### 🪵 Create a new stacked branch
+
+```bash
+stacksmith stack <new-branch> <parent-branch>
+```
+
+#### 🧽 Rebase and sync your stack
+
+```bash
+stacksmith sync <branch1> <branch2> <branch3> ...
+```
+
+#### 🔧 Rebase a branch after parent PR merges
+
+```bash
+stacksmith fix-pr <branch> <new-target>
+```
+
+#### ⬆️ Push current branch safely
+
+```bash
+stacksmith push
+```
+
+#### 🌳 Visualize your branch stack
+
+```bash
+stacksmith graph
+```
 
 ---
 
@@ -89,9 +138,9 @@ Use `stacksmith sync` to quickly rebase and update a full stack when many PRs ha
 
 ### What Stacksmith Doesn't Do 🙅
 
-- Create PRs for you (use your Git platform)
-- Auto-retarget PRs (you do that manually)
-- Auto-detect your stack (you pass branch names explicitly)
+- ❌ Create PRs for you (use your Git platform)
+- ❌ Auto-retarget PRs (you do that manually)
+- ❌ Auto-detect your stack (you pass branch names explicitly)
 
 Stacksmith stays simple & bashy — that's the point.
 
@@ -118,79 +167,16 @@ Stacksmith stays simple & bashy — that's the point.
 
 ---
 
-## 🚀 Installation
+## Comming Soon: Stacksmith (Go Edition) ⚡
 
-1. Download `stacksmith.sh`
-2. Make it executable:
-```bash
-chmod +x stacksmith.sh
-```
-3. (Optional) Add to PATH:
-```bash
-mv stacksmith.sh ~/bin/stacksmith
-```
-Or alias it:
-```
-alias stacksmith='bash /path/to/stacksmith.sh'
-```
+We’re rebuilding Stacksmith in Go for a more powerful and visual CLI experience:
+- 🌲 Rich, colorized DAG views of your stack
+- 🧑🏾‍🏭 Interactive flows powered by [gum](https://github.com/charmbracelet/gum)
+- 💻 Optional full-screen TUI with [bubbletea](https://github.com/charmbracelet/bubbletea)
+- 🧪 Diff previews, merge awareness, branch introspection
+- 🧼 Safe, guided stack syncing and push flows
 
-If you run into trouble adding `stacksmith` to your path, [here's](https://specifications.freedesktop.org/basedir-spec/latest/) an excellent and helpful article recommended by my friend [Osaro](https://github.com/osaroadade) 🙂
-
-You might also have to make the script executable after adding it to your path.
-
----
-
-## ⚙️ Usage
-
-### 🪵 Create a new stacked branch
-
-```bash
-stacksmith stack <new-branch> <parent-branch>
-```
-
-Example:
-
-```bash
-stacksmith stack feature/part-1 feature/base
-```
-
-### 🧽 Rebase and sync your stack
-
-```bash
-stacksmith sync <branch1> <branch2> <branch3> ...
-```
-
-Example:
-
-```bash
-stacksmith sync feature/base feature/part-1 feature/part-2
-```
-
-### 🔧 Rebase a branch after parent PR merges
-
-```bash
-stacksmith fix-pr <branch> <new-target>
-```
-
-Example:
-
-```bash
-stacksmith fix-pr feature/part-1 main
-```
-
-### ⬆️ Push current branch safely
-
-```bash
-stacksmith push
-```
-
-Handles first-time push & force push safely.
-
-### 🌳 Visualize your branch stack
-
-```bash
-stacksmith graph
-```
+It’ll be fast, easy to install, and compatible with your current `stacksmith-lite` setup. Stay tuned!
 
 ---
 
@@ -202,6 +188,8 @@ Contributions are welcome! ✨
 3. Commit your changes (git commit -m 'feat: add amazing feature')
 4. Push to the branch (git push)
 5. Open a pull request
+
+Add commands, fix bugs, clean up UI, or just drop a pun. All artisan hands on deck.
 
 ---
 
