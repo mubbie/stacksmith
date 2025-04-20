@@ -1,20 +1,31 @@
 # Stacksmith
 
-> Ultralight Artisan Git Stacking Tool (Forgive the corny jokes — staying on brand 🧑🏾‍🏭)
+<p align="center">
+  <a href="https://github.com/mubbie/stacksmith/releases">
+    <img src="https://img.shields.io/github/v/release/mubbie/stacksmith" alt="Latest Release">
+  </a>
+  <img src="https://img.shields.io/github/license/mubbie/stacksmith" alt="License">
+  <img src="https://github.com/mubbie/stacksmith/actions/workflows/release.yml/badge.svg" alt="CI">
+  <img src="https://img.shields.io/badge/built%20with-Go-00ADD8?logo=go" alt="Built with Go">
+  <img src="https://img.shields.io/github/stars/mubbie/stacksmith?style=social" alt="GitHub Stars">
+</p>
+
+> Ultralight Artisan Git Stacking Tool
 > *Forgive the corny jokes — staying on brand 🧑🏾‍🏭*
 
 Stacksmith is your terminal blacksmithing forge for managing stacked pull branches and pull requests using **vanilla Git** 🌳
 
 This repo contains two versions:
 
-| Version             | Description                                         |
-|----------------------|-----------------------------------------------------|
-| `stacksmith-lite.sh` | 🪶 Lightweight Bash script for fast Git stacking    |
-| `stacksmith`         | ⚡ Upcoming Go-powered CLI with rich UI (coming soon) |
+| Version             | Description                                         | Status |
+|----------------------|-----------------------------------------------------| ----- | 
+| `stacksmith-lite.sh` | 🪶 Lightweight Bash script for fast Git stacking    | ✅ Stable |
+| `stacksmith`         | ⚡ Upcoming Go-powered CLI with rich UI (coming soon) | 🚧 In Progress | 
 
 ---
 
-## Why Stacksmith? 🤔
+<details>
+<summary><strong>Why Stacksmith? 🤔</strong></summary>
 
 Imagine this: you're building a big feature. It's going to touch a lot of files and introduce a lot of changes.
 With traditional Git workflows, your options are usually:
@@ -32,7 +43,10 @@ Option 2 → Many PRs but blocked 😩
 Stacksmith → Many PRs. Keep shipping 🚀
 ```
 
-### What Are Stacked PRs? 🚂
+</details>
+
+<details>
+<summary><strong>What Are Stacked PRs? 🚂</strong></summary>
 
 Stacked PRs let you break work into small, focused branches — each building on top of the last.
 
@@ -49,6 +63,50 @@ BUT managing these stacks manually with plain Git is tedious (See: [Stacked bran
 - Retargeting PRs
 
 That's where `stacksmith` comes in.
+
+</details>
+
+---
+
+## Stacksmith (Go Edition) ⚡
+
+A Go-powered version of stacksmith with an interactive CLI. It includes:
+
+- 🔄 Guided flows for stacking, syncing, and fixing branches
+- 🎨 Stylish user interface built with [Bubble Tea](https://github.com/charmbracelet/bubbletea) and [Lip Gloss](https://github.com/charmbracelet/lipgloss) from [charm.sh](https://charm.sh/)
+- 🖥️ Full Terminal UI, interactive graph, and DAG visualization (coming soon!)
+
+### Install Stacksmith (Go Edition) 🚀
+
+#### Linux & macOS
+
+```bash
+brew tap mubbie/homebrew-tap
+brew install stacksmith
+```
+
+<details>
+<summary>Or install manually</summary>
+  
+```bash
+curl -LO https://github.com/mubbie/stacksmith/releases/latest/download/stacksmith_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.tar.gz
+tar -xzf stacksmith_*.tar.gz
+sudo mv stacksmith /usr/local/bin/
+```
+
+</details>
+
+#### Windows
+
+📦 [Installer available on GitHub Releases](https://github.com/mubbie/stacksmith/releases)
+
+Once [approved](https://github.com/microsoft/winget-pkgs/pull/249878), you'll also be able to install via:
+
+```powershell
+winget install Mubbie.Stacksmith
+```
+
+> ℹ️ Note: Winget package is pending approval. We’ll update this once it lands.
 
 ---
 
@@ -79,7 +137,15 @@ alias stacksmith='bash /path/to/stacksmith-lite.sh'
 
 If you run into trouble adding `stacksmith` to your path, [here's](https://specifications.freedesktop.org/basedir-spec/latest/) an excellent and helpful article recommended by my friend [Osaro](https://github.com/osaroadade) 🙂
 
-### Usage ⚙️
+---
+
+## Usage ⚙️
+
+#### 🧩 Launch Interactive UI (In Go Edition)
+
+```bash
+stacksmith
+```
 
 #### 🪵 Create a new stacked branch
 
@@ -111,9 +177,12 @@ stacksmith push
 stacksmith graph
 ```
 
+> Prints an ASCII-style Git commit graph with branch tips and relationships.
+
 ---
 
-## Managing PRs with Stacksmith 📂
+<details>
+<summary><strong>Managing PRs with Stacksmith 📂</strong></summary>
 
 > Stacksmith helps you manage your local branches beautifully. But your PRs will still need to be created, managed, and merged manually on your Git hosting platform (Azure DevOps, GitHub, GitLab, Bitbucket, etc).
 
@@ -144,10 +213,11 @@ Use `stacksmith sync` to quickly rebase and update a full stack when many PRs ha
 
 Stacksmith stays simple & bashy — that's the point.
 
----
+</details>
 
-## 🔦 Gotchas & Pitfalls
-
+<details>
+<summary><strong>Gotchas & Pitfalls 🔦 </strong></summary>
+  
 > Some common sharp edges when working with stacked PRs (and how to avoid them):
 
 | Situation                          | What Happens                                              | How To Handle                                                                |
@@ -165,18 +235,20 @@ Stacksmith stays simple & bashy — that's the point.
 - Push your changes
 - Clean stack = Happy reviewers + Happy you 🌱
 
+</details>
+
 ---
 
-## Comming Soon: Stacksmith (Go Edition) ⚡
+## Coming Soon in Stacksmith (Go Edition) ⚡
 
 We’re rebuilding Stacksmith in Go for a more powerful and visual CLI experience:
-- 🌲 Rich, colorized DAG views of your stack
-- 🧑🏾‍🏭 Interactive flows powered by [gum](https://github.com/charmbracelet/gum)
-- 💻 Optional full-screen TUI with [bubbletea](https://github.com/charmbracelet/bubbletea)
-- 🧪 Diff previews, merge awareness, branch introspection
-- 🧼 Safe, guided stack syncing and push flows
+- 🌲 Rich, colorized DAG views
+- 🧑🏾‍🏭 Interactive TUI
+- 🧪 Diff previews & branch introspection
+- 💾 Config and logging support
+- 🔌 GitHub/Azure integration
 
-It’ll be fast, easy to install, and compatible with your current `stacksmith-lite` setup. Stay tuned!
+See the full [Stacksmith Go Roadmap](./docs/planning/stacksmith-go.md) ➡️
 
 ---
 
