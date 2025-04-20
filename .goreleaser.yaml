@@ -45,7 +45,7 @@ archives:
       - build/completions/stacksmith.fish
     format_overrides:
       - goos: windows
-        format: zip
+        formats: zip
 
 nfpms:
   - id: stacksmith-pkg
