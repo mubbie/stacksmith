@@ -64,9 +64,6 @@ jobs:
           # Extract with -y flag to automatically answer yes to all prompts
           7z x stacksmith.zip -oextracted -y
 
-      - name: Debug file list 
-        run: Get-ChildItem -Recurse
-
       - name: Prepare installer directory
         run: |
           mkdir -p installer/artifact
@@ -95,6 +92,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Setup GitHub CLI
+        uses: cli/cli-action@v1
 
       - name: Download Installer and Calculate SHA
         run: |
@@ -139,16 +139,40 @@ jobs:
           ManifestVersion: 1.4.0
           EOF
 
-      - name: Create Pull Request to winget-pkgs
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.WINGET_PR_TOKEN }}
-          path: ./manifests
-          commit-message: Add Stacksmith ${{ needs.goreleaser.outputs.version }}
-          title: Add Stacksmith ${{ needs.goreleaser.outputs.version }}
-          body: |
-            Add Stacksmith version ${{ needs.goreleaser.outputs.version }} to winget.
-            PR created by GitHub Actions.
-          branch: stacksmith-${{ needs.goreleaser.outputs.version }}
-          base: master
-          push-to-fork: microsoft/winget-pkgs
+      - name: Create Fork and PR to winget-pkgs
+        run: |
+          VERSION=${{ needs.goreleaser.outputs.version }}
+          
+          # Fork the winget-pkgs repository if needed
+          gh repo fork microsoft/winget-pkgs --clone=false || true
+          
+          # Clone our fork
+          git clone https://github.com/${{ github.repository_owner }}/winget-pkgs.git
+          cd winget-pkgs
+          
+          # Create a new branch for the PR
+          git checkout -b stacksmith-${VERSION}
+          
+          # Create directories for the manifest
+          mkdir -p manifests/m/Mubbie/Stacksmith/${VERSION}
+          
+          # Copy manifest files from the main repo
+          cp ../manifests/m/Mubbie/Stacksmith/${VERSION}/* manifests/m/Mubbie/Stacksmith/${VERSION}/
+          
+          # Configure git
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          # Commit and push
+          git add .
+          git commit -m "Add Stacksmith ${VERSION}"
+          git push -u origin stacksmith-${VERSION}
+          
+          # Create PR
+          gh pr create --repo microsoft/winget-pkgs \
+            --title "Add Stacksmith ${VERSION}" \
+            --body "Add Stacksmith version ${VERSION} to winget. PR created by GitHub Actions." \
+            --head ${{ github.repository_owner }}:stacksmith-${VERSION} \
+            --base master
+        env:
+          GITHUB_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
