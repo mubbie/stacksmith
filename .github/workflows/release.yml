@@ -67,8 +67,10 @@ jobs:
             exit 1
           }
 
-      - name: Build Inno Setup installer
+      - name: Build Installer
+        shell: powershell
         run: |
+            $env:Path += ";C:\Program Files (x86)\Inno Setup 6"
             iscc /DMyAppVersion="${{ needs.goreleaser.outputs.version }}" "./installer/setup.iss"
 
       - name: Upload installer to GitHub Release
