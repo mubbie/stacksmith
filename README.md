@@ -1,6 +1,10 @@
 # Stacksmith
 
 <p align="center">
+  <img src="assets/stacksmith-ui.gif" alt="Stacksmith UI demo" width="800"/>
+</p>
+
+<p align="center">
   <a href="https://github.com/mubbie/stacksmith/releases">
     <img src="https://img.shields.io/github/v/release/mubbie/stacksmith" alt="Latest Release">
   </a>
