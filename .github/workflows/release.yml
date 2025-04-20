@@ -68,11 +68,13 @@ jobs:
           }
 
       - name: Build Inno Setup installer
-        run: iscc /DMyAppVersion="${{ needs.goreleaser.outputs.version }}" installer/setup.iss
+        run: |
+            iscc /DMyAppVersion="${{ needs.goreleaser.outputs.version }}" "./installer/setup.iss"
 
       - name: Upload installer to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ needs.goreleaser.outputs.version }}
           files: installer/Output/stacksmith-setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
