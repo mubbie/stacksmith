@@ -20,7 +20,7 @@ Compression=lzma
 SolidCompression=yes
 
 [Files]
-Source: "..\dist\stacksmith_windows_amd64\stacksmith.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifact\stacksmith.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Stacksmith (CLI)"; Filename: "{app}\stacksmith.exe"
