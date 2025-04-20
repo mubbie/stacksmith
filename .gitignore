@@ -6,7 +6,6 @@ stacksmith.exe
 *.test
 
 # Build directories
-/build/
 /dist/
 /bin/
 /release/
