@@ -58,7 +58,11 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile "stacksmith.zip"
 
       - name: Extract binary
-        run: 7z x stacksmith.zip
+        run: |
+          # Create a clean extraction directory
+          mkdir -p extracted
+          # Extract with -y flag to automatically answer yes to all prompts
+          7z x stacksmith.zip -oextracted -y
 
       - name: Debug file list 
         run: Get-ChildItem -Recurse
@@ -66,7 +70,8 @@ jobs:
       - name: Prepare installer directory
         run: |
           mkdir -p installer/artifact
-          Copy-Item stacksmith.exe installer/artifact/
+          # Copy from extracted directory
+          Copy-Item extracted/stacksmith.exe installer/artifact/
           Copy-Item win-installer/setup.iss installer/
           Copy-Item win-installer/icon.ico installer/ -ErrorAction SilentlyContinue
 
