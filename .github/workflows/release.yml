@@ -136,52 +136,47 @@ jobs:
           ManifestVersion: 1.4.0
           EOF
 
-      - name: Create Fork and PR to winget-pkgs
+      # Instead of using gh CLI, use direct Git commands and GitHub REST API
+      - name: Setup Git
         run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Clone Winget-pkgs Fork
+        run: |
+          # Clone your fork of winget-pkgs
+          PAT=${{ secrets.WINGET_PR_TOKEN }}
           VERSION=${{ needs.goreleaser.outputs.version }}
-          
-          # Unset existing GITHUB_TOKEN to avoid conflicts
-          unset GITHUB_TOKEN
-          
-          # Use custom token with PAT_TOKEN environment variable
-          echo "${{ secrets.WINGET_PR_TOKEN }}" > gh_token.txt
-          gh auth login --with-token < gh_token.txt
-          rm gh_token.txt
-          
-          # Fork the winget-pkgs repository if needed
-          gh repo fork microsoft/winget-pkgs --clone=false || true
-          
-          # Set up git credentials for HTTPS authentication
-          git config --global credential.helper store
-          echo "https://${{ secrets.WINGET_PR_TOKEN }}@github.com" > ~/.git-credentials
-          
-          # Clone our fork with token in URL for authentication
-          git clone https://x-access-token:${{ secrets.WINGET_PR_TOKEN }}@github.com/${{ github.repository_owner }}/winget-pkgs.git
+          git clone https://${PAT}@github.com/${{ github.repository_owner }}/winget-pkgs.git
           cd winget-pkgs
           
-          # Create a new branch for the PR
+          # Ensure we are up to date with the upstream
+          git remote add upstream https://github.com/microsoft/winget-pkgs.git
+          git fetch upstream master
+          
+          # Create a new branch
           git checkout -b stacksmith-${VERSION}
           
-          # Create directories for the manifest
+          # Create directories and copy files
           mkdir -p manifests/m/Mubbie/Stacksmith/${VERSION}
-          
-          # Copy manifest files from the main repo
           cp ../manifests/m/Mubbie/Stacksmith/${VERSION}/* manifests/m/Mubbie/Stacksmith/${VERSION}/
           
-          # Configure git
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          
           # Commit and push
-          git add .
+          git add manifests/m/Mubbie/Stacksmith/${VERSION}
           git commit -m "Add Stacksmith ${VERSION}"
           git push -u origin stacksmith-${VERSION}
-          
-          # Create PR using GH CLI with explicit token
-          gh pr create --repo microsoft/winget-pkgs \
-            --title "Add Stacksmith ${VERSION}" \
-            --body "Add Stacksmith version ${VERSION} to winget. PR created by GitHub Actions." \
-            --head ${{ github.repository_owner }}:stacksmith-${VERSION} \
-            --base master
-        env:
-          GH_TOKEN: ${{ secrets.WINGET_PR_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.WINGET_PR_TOKEN }}
+          path: ./winget-pkgs
+          commit-message: Add Stacksmith ${{ needs.goreleaser.outputs.version }}
+          title: Add Stacksmith ${{ needs.goreleaser.outputs.version }}
+          body: |
+            Add Stacksmith version ${{ needs.goreleaser.outputs.version }} to winget.
+            
+            PR created by GitHub Actions
+          branch: stacksmith-${{ needs.goreleaser.outputs.version }}
+          base: master
+          repository: microsoft/winget-pkgs
