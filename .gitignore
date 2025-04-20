@@ -1,1 +1,38 @@
-.qodo
+# Binaries
+stacksmith
+stacksmith.exe
+*.exe
+*.out
+*.test
+
+# Build directories
+/build/
+/dist/
+/bin/
+/release/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Go workspace stuff
+*.log
+*.env
+*.local
+*.swp
+
+# Go modules & tooling
+/vendor/
+/coverage.out
+
+# IDEs/editors
+.vscode/
+.idea/
+*.iml
+
+# GoReleaser artifacts
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+/homebrew-tap/

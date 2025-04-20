@@ -6,247 +6,182 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/mubbie/stacksmith/core"
+	"github.com/mubbie/stacksmith/ui/styles"
 )
 
-// branchModel represents a branch in the selection list
-type branchModel struct {
-	name     string
-	selected bool
+type syncStep int
+
+const (
+	selectingBranches syncStep = iota
+	confirmingSelection
+)
+
+// SyncPromptModel handles branch selection for the sync command
+type SyncPromptModel struct {
+	BasePrompt
+	BranchList *SelectableList
+	Step       syncStep
+	Git        *core.GitExecutor
 }
 
-// syncPromptModel handles branch selection for the sync command
-type syncPromptModel struct {
-	availableBranches []branchModel
-	selectedBranches  []string
-	cursor           int
-	err              string
-	step             int // 0 for branch selection, 1 for confirmation
-	git              *core.GitExecutor
+// NewSyncPromptModel creates a new sync prompt model
+func NewSyncPromptModel(branches []string, git *core.GitExecutor) SyncPromptModel {
+	return SyncPromptModel{
+		BasePrompt: BasePrompt{
+			Title: "🧽 Sync branch stack",
+		},
+		BranchList: NewSelectableList(branches),
+		Step:       selectingBranches,
+		Git:        git,
+	}
 }
 
-func (m syncPromptModel) Init() tea.Cmd {
+func (m SyncPromptModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m syncPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m SyncPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
-			// Quietly signal cancellation
-			m.selectedBranches = nil
-			m.err = "cancelled" // Internal signal, won't be displayed
+			m.Cancel()
 			return m, tea.Quit
 
 		case "up", "k":
-			if m.step == 0 && m.cursor > 0 {
-				m.cursor--
+			if m.Step == selectingBranches {
+				m.BranchList.MoveUp()
+				m.ClearError()
 			}
 			return m, nil
 
 		case "down", "j":
-			if m.step == 0 && m.cursor < len(m.availableBranches)-1 {
-				m.cursor++
+			if m.Step == selectingBranches {
+				m.BranchList.MoveDown()
+				m.ClearError()
 			}
 			return m, nil
 
 		case "enter":
-			if m.step == 0 {
-				// If no branches are selected, select the current one first
-				if len(m.selectedBranches) == 0 {
-					m.availableBranches[m.cursor].selected = true
-					m.selectedBranches = append(m.selectedBranches, m.availableBranches[m.cursor].name)
+			if m.Step == selectingBranches {
+				// If no branches are selected yet, select the current one first
+				if m.BranchList.GetSelectedCount() == 0 {
+					m.BranchList.ToggleSelected()
 				}
-				
-				// Move to confirmation step
-				if len(m.selectedBranches) >= 2 {
-					m.err = ""
-					m.step = 1
+
+				// Validate we have enough branches selected
+				if m.BranchList.GetSelectedCount() >= 2 {
+					m.ClearError()
+					m.Step = confirmingSelection
 				} else {
-					m.err = "Please select at least 2 branches to sync"
+					m.SetError("Please select at least 2 branches to sync")
 				}
-			} else if m.step == 1 {
+			} else if m.Step == confirmingSelection {
 				// Confirmation step - we're done
 				return m, tea.Quit
 			}
 			return m, nil
 
 		case " ":
-			if m.step == 0 {
-				// Toggle selection of current branch
-				currentBranch := m.availableBranches[m.cursor]
-				currentName := currentBranch.name
-				
-				if currentBranch.selected {
-					// Remove from selected branches
-					for i, name := range m.selectedBranches {
-						if name == currentName {
-							m.selectedBranches = append(m.selectedBranches[:i], m.selectedBranches[i+1:]...)
-							break
-						}
-					}
-				} else {
-					// Add to selected branches
-					m.selectedBranches = append(m.selectedBranches, currentName)
-				}
-				
-				// Update selected state
-				m.availableBranches[m.cursor].selected = !currentBranch.selected
+			if m.Step == selectingBranches {
+				m.BranchList.ToggleSelected()
 			}
 			return m, nil
 		}
 	}
-	
+
 	return m, nil
 }
 
-func (m syncPromptModel) View() string {
-	// Use title styling but ensure no padding or indentation is applied
-	title := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#ffc27d")).
-		PaddingLeft(0).  // Explicitly set padding to 0
-		MarginLeft(0).   // Explicitly set margin to 0
-		Render("🧽 Sync branch stack")
-	
-	s := title + "\n\n"
+func (m SyncPromptModel) View() string {
+    s := m.RenderTitle()
 
-	if m.step == 0 {
-		// Branch selection screen - keep text aligned to the left with no indentation
-		s += "Select branches to sync in order (parent to child):\n"
-		s += "(use space to select, enter to continue)\n\n"
+    if m.Step == selectingBranches {
+        // Branch selection screen
+        s += "Select branches to sync in order (parent to child):\n"
+        s += "(use space to select, enter to continue)\n\n"
+        // Show checkboxes (true) and order numbers (true)
+        s += m.BranchList.Render(true, true)
+        
+    } else if m.Step == confirmingSelection {
+        // Confirmation screen
+        s += "Ready to sync branches in this order:\n\n"
+        
+        selectedBranches := m.BranchList.GetSelectedItems()
+        
+        for i, name := range selectedBranches {
+            if i > 0 {
+                s += fmt.Sprintf("  %d. %s ← %s\n", i+1, name, selectedBranches[i-1])
+            } else {
+                s += fmt.Sprintf("  %d. %s (base)\n", i+1, name)
+            }
+        }
+        
+        s += "\n" + styles.Success.Render("Press Enter to confirm and begin sync")
+    }
 
-		for i, branch := range m.availableBranches {
-			cursor := " "
-			if m.cursor == i {
-				cursor = ">"
-			}
+    // Error message
+    s += m.RenderError()
 
-			checkbox := "[ ]"
-			if branch.selected {
-				checkbox = "[x]"
-			}
+    // Help text
+    helpText := ""
+    if m.Step == selectingBranches {
+        helpText = "↑/↓: Navigate • Space: Select • Enter: Continue • Esc: Return to menu"
+    } else {
+        helpText = "Enter: Confirm • Esc: Return to menu"
+    }
+    
+    s += m.RenderHelpText(helpText)
 
-			// Add order number if selected
-			orderInfo := "   "
-			for j, name := range m.selectedBranches {
-				if name == branch.name {
-					orderInfo = fmt.Sprintf(" %d ", j+1)
-					break
-				}
-			}
-
-			branchStyle := lipgloss.NewStyle()
-			if m.cursor == i {
-				branchStyle = branchStyle.Foreground(lipgloss.Color("#ffc27d")).Bold(true)
-			}
-
-			s += fmt.Sprintf("%s %s %s %s\n", 
-				lipgloss.NewStyle().Foreground(lipgloss.Color("#ffc27d")).Render(cursor),
-				checkbox, 
-				orderInfo,
-				branchStyle.Render(branch.name))
-		}
-	} else if m.step == 1 {
-		// Confirmation screen
-		s += "Ready to sync branches in this order:\n\n"
-		
-		for i, name := range m.selectedBranches {
-			if i > 0 {
-				s += fmt.Sprintf("  %d. %s ← %s\n", i, name, m.selectedBranches[i-1])
-			} else {
-				s += fmt.Sprintf("  %d. %s (base)\n", i+1, name)
-			}
-		}
-		
-		s += "\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#50fa7b")).Render("Press Enter to confirm and begin sync")
-	}
-
-	// Error message (but don't show "cancelled")
-	if m.err != "" && m.err != "cancelled" {
-		s += "\n\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#ff5555")).Render(m.err)
-	}
-
-	// Help text
-	helpText := ""
-	if m.step == 0 {
-		helpText = "↑/↓: Navigate • Space: Select • Enter: Continue • Esc: Return to menu"
-	} else {
-		helpText = "Enter: Confirm • Esc: Return to menu"
-	}
-	
-	s += "\n\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render(helpText)
-
-	return s
+    return s
 }
 
 // RunSyncPrompt shows a prompt for the sync command and returns selected branches
 func RunSyncPrompt() ([]string, bool) {
 	git := core.NewGitExecutor("")
-	
+
 	// Get list of branches
 	branchesOutput, err := git.Execute("branch")
 	if err != nil {
 		fmt.Printf("Error getting branches: %s\n", err)
 		return nil, false
 	}
-	
+
 	branchLines := strings.Split(strings.TrimSpace(branchesOutput), "\n")
-	var branches []branchModel
-	
+	var branches []string
+
 	// Parse branch names and filter out the current branch
 	for _, line := range branchLines {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "*") {
-			// Current branch - skip for now
-			continue
+			// Current branch - mark it but keep it
+			line = strings.TrimPrefix(line, "* ")
 		}
-		
+
 		branchName := strings.TrimSpace(line)
-		branches = append(branches, branchModel{
-			name:     branchName,
-			selected: false,
-		})
+		branches = append(branches, branchName)
 	}
-	
-	// Add current branch to the beginning
-	currentBranch, err := git.GetCurrentBranch()
-	if err == nil {
-		branches = append([]branchModel{{
-			name:     currentBranch,
-			selected: false,
-		}}, branches...)
-	}
-	
-	// Initialize model
-	initialModel := syncPromptModel{
-		availableBranches: branches,
-		selectedBranches:  []string{},
-		cursor:           0,
-		step:             0,
-		git:              git,
-	}
-	
-	p := tea.NewProgram(initialModel)
-	
+
+	// Initialize model with branches
+	p := tea.NewProgram(NewSyncPromptModel(branches, git))
+
 	m, err := p.Run()
 	if err != nil {
 		fmt.Printf("Error running prompt: %v\n", err)
 		return nil, false
 	}
-	
-	if m, ok := m.(syncPromptModel); ok {
+
+	if m, ok := m.(SyncPromptModel); ok {
 		// Check if user cancelled
-		if m.err == "cancelled" {
+		if m.IsCancelled() {
 			return nil, false
 		}
-		
-		if m.step == 1 && len(m.selectedBranches) >= 2 {
-			return m.selectedBranches, true
+
+		if m.Step == confirmingSelection && m.BranchList.GetSelectedCount() >= 2 {
+			return m.BranchList.GetSelectedItems(), true
 		}
 	}
-	
+
 	return nil, false
 }

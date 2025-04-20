@@ -3,9 +3,16 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/mubbie/stacksmith/ui/simplemenu"
 	"github.com/spf13/cobra"
+)
+
+// Version information
+var (
+	Version   = "dev"
+	BuildTime = "unknown"
 )
 
 var rootCmd = &cobra.Command{
@@ -29,9 +36,15 @@ func Execute() {
 }
 
 func init() {
+	// Set version information
+	rootCmd.Version = Version
+	rootCmd.SetVersionTemplate(`Stacksmith Version: {{.Version}}
+Build Time: ` + BuildTime + `
+`)
+
 	// Hide the completion command from help
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	
+
 	// Replace the default help command with our custom one
 	rootCmd.SetHelpCommand(&cobra.Command{
 		Use:   "help [command]",
@@ -48,18 +61,17 @@ func init() {
 	})
 }
 
-
 // launchMainMenu starts the main menu and handles the selected command
 func launchMainMenu() {
 	// Loop until the user selects "quit" or exits with Ctrl+C
 	for {
 		selectedCmd := simplemenu.RunMenu()
-		
+
 		if selectedCmd == "" || selectedCmd == "quit" {
 			// Exit the loop and return to the shell
 			return
 		}
-		
+
 		// Execute the selected command directly - this allows us to return to the menu properly
 		// instead of launching as a separate process
 		switch selectedCmd {
@@ -78,11 +90,18 @@ func launchMainMenu() {
 		default:
 			fmt.Printf("Unknown command: %s\n", selectedCmd)
 		}
-		
-		// Pause to let the user see the output before showing menu again
+
+		// Ask user whether to return to menu or exit
 		fmt.Println()
-		fmt.Print("Press Enter to return to menu...")
-		fmt.Scanln() // Wait for Enter key
-		fmt.Println()
+		fmt.Print("Would you like to return to the Stacksmith menu? [Y/n]: ")
+		var response string
+		fmt.Scanln(&response)
+
+		response = strings.ToLower(strings.TrimSpace(response))
+		if response == "n" || response == "no" {
+			return // Exit the function, which exits the application
+		}
+
+		fmt.Println() // Add extra newline for spacing
 	}
 }

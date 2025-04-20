@@ -6,45 +6,56 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mubbie/stacksmith/ui/styles"
 )
 
 // StackPromptModel handles user input for the stack command
-type stackPromptModel struct {
-	newBranch    string
-	parentBranch string
-	currentField int
-	cursorPos    int
-	err          string
+type StackPromptModel struct {
+	BasePrompt
+	NewBranch    string
+	ParentBranch string
+	CurrentField int
+	CursorPos    int
 }
 
-func (m stackPromptModel) Init() tea.Cmd {
+// NewStackPromptModel creates a new stack prompt model
+func NewStackPromptModel() StackPromptModel {
+	return StackPromptModel{
+		BasePrompt: BasePrompt{
+			Title: "🪵 Create a new branch",
+		},
+		ParentBranch: "main", // Default parent branch
+		CurrentField: 0,
+		CursorPos:    0,
+	}
+}
+
+func (m StackPromptModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m stackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m StackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
-			// Don't set an error message, just quietly return a signal
-			m.newBranch = ""
-			m.parentBranch = ""
-			m.err = "cancelled" // Internal signal, won't be displayed
+			m.Cancel()
 			return m, tea.Quit
 
 		case "enter":
-			if m.currentField == 0 {
-				if m.newBranch == "" {
-					m.err = "New branch name cannot be empty"
+			if m.CurrentField == 0 {
+				if m.NewBranch == "" {
+					m.SetError("New branch name cannot be empty")
 					return m, nil
 				}
-				m.currentField = 1
-				m.cursorPos = len(m.parentBranch)
+				m.CurrentField = 1
+				m.CursorPos = len(m.ParentBranch)
+				m.ClearError()
 				return m, nil
 			}
 
-			if m.parentBranch == "" {
-				m.err = "Parent branch name cannot be empty"
+			if m.ParentBranch == "" {
+				m.SetError("Parent branch name cannot be empty")
 				return m, nil
 			}
 
@@ -52,53 +63,54 @@ func (m stackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "tab":
-			if m.currentField == 0 && m.newBranch != "" {
-				m.currentField = 1
-				m.cursorPos = len(m.parentBranch)
-			} else if m.currentField == 1 && m.parentBranch != "" {
-				m.currentField = 0
-				m.cursorPos = len(m.newBranch)
+			if m.CurrentField == 0 && m.NewBranch != "" {
+				m.CurrentField = 1
+				m.CursorPos = len(m.ParentBranch)
+			} else if m.CurrentField == 1 && m.ParentBranch != "" {
+				m.CurrentField = 0
+				m.CursorPos = len(m.NewBranch)
 			}
+			m.ClearError()
 			return m, nil
 
 		case "backspace":
-			if m.currentField == 0 && len(m.newBranch) > 0 && m.cursorPos > 0 {
-				m.newBranch = m.newBranch[:m.cursorPos-1] + m.newBranch[m.cursorPos:]
-				m.cursorPos--
-			} else if m.currentField == 1 && len(m.parentBranch) > 0 && m.cursorPos > 0 {
-				m.parentBranch = m.parentBranch[:m.cursorPos-1] + m.parentBranch[m.cursorPos:]
-				m.cursorPos--
+			if m.CurrentField == 0 && len(m.NewBranch) > 0 && m.CursorPos > 0 {
+				m.NewBranch = m.NewBranch[:m.CursorPos-1] + m.NewBranch[m.CursorPos:]
+				m.CursorPos--
+			} else if m.CurrentField == 1 && len(m.ParentBranch) > 0 && m.CursorPos > 0 {
+				m.ParentBranch = m.ParentBranch[:m.CursorPos-1] + m.ParentBranch[m.CursorPos:]
+				m.CursorPos--
 			}
-			m.err = ""
+			m.ClearError()
 			return m, nil
 
 		case "left":
-			if m.currentField == 0 && m.cursorPos > 0 {
-				m.cursorPos--
-			} else if m.currentField == 1 && m.cursorPos > 0 {
-				m.cursorPos--
+			if m.CurrentField == 0 && m.CursorPos > 0 {
+				m.CursorPos--
+			} else if m.CurrentField == 1 && m.CursorPos > 0 {
+				m.CursorPos--
 			}
 			return m, nil
 
 		case "right":
-			if m.currentField == 0 && m.cursorPos < len(m.newBranch) {
-				m.cursorPos++
-			} else if m.currentField == 1 && m.cursorPos < len(m.parentBranch) {
-				m.cursorPos++
+			if m.CurrentField == 0 && m.CursorPos < len(m.NewBranch) {
+				m.CursorPos++
+			} else if m.CurrentField == 1 && m.CursorPos < len(m.ParentBranch) {
+				m.CursorPos++
 			}
 			return m, nil
 
 		default:
-			// Handle regular character input
+			// Handle regular character input (critical for typing branch names)
 			if msg.String() != "tab" && msg.String() != "enter" && len(msg.String()) == 1 {
-				if m.currentField == 0 {
-					m.newBranch = m.newBranch[:m.cursorPos] + msg.String() + m.newBranch[m.cursorPos:]
-					m.cursorPos++
-				} else if m.currentField == 1 {
-					m.parentBranch = m.parentBranch[:m.cursorPos] + msg.String() + m.parentBranch[m.cursorPos:]
-					m.cursorPos++
+				if m.CurrentField == 0 {
+					m.NewBranch = m.NewBranch[:m.CursorPos] + msg.String() + m.NewBranch[m.CursorPos:]
+					m.CursorPos++
+				} else if m.CurrentField == 1 {
+					m.ParentBranch = m.ParentBranch[:m.CursorPos] + msg.String() + m.ParentBranch[m.CursorPos:]
+					m.CursorPos++
 				}
-				m.err = ""
+				m.ClearError()
 			}
 			return m, nil
 		}
@@ -106,72 +118,57 @@ func (m stackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m stackPromptModel) View() string {
-	// Use title styling but ensure no padding or indentation is applied
-	title := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#ffc27d")).
-		PaddingLeft(0). // Explicitly set padding to 0
-		MarginLeft(0).  // Explicitly set margin to 0
-		Render("🪵 Create a new branch")
-
-	s := title + "\n\n"
+func (m StackPromptModel) View() string {
+	s := m.RenderTitle()
 
 	// New branch field
 	newBranchLabel := "New branch name: "
-	if m.currentField == 0 {
-		s += lipgloss.NewStyle().Bold(true).Render(newBranchLabel)
+	if m.CurrentField == 0 {
+		s += styles.Selected.Render(newBranchLabel)
 
 		// Insert cursor at the current position
-		if m.cursorPos == len(m.newBranch) {
-			s += m.newBranch + lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(" ")
+		if m.CursorPos == len(m.NewBranch) {
+			s += m.NewBranch + styles.Normal.Background(lipgloss.Color(styles.ColorSubdued)).Render(" ")
 		} else {
-			s += m.newBranch[:m.cursorPos] +
-				lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(string(m.newBranch[m.cursorPos])) +
-				m.newBranch[m.cursorPos+1:]
+			s += m.NewBranch[:m.CursorPos] +
+				styles.Normal.Background(lipgloss.Color(styles.ColorSubdued)).Render(string(m.NewBranch[m.CursorPos])) +
+				m.NewBranch[m.CursorPos+1:]
 		}
 	} else {
-		s += newBranchLabel + m.newBranch
+		s += newBranchLabel + m.NewBranch
 	}
 
 	s += "\n"
 
 	// Parent branch field
 	parentBranchLabel := "Parent branch: "
-	if m.currentField == 1 {
-		s += lipgloss.NewStyle().Bold(true).Render(parentBranchLabel)
+	if m.CurrentField == 1 {
+		s += styles.Selected.Render(parentBranchLabel)
 
 		// Insert cursor at the current position
-		if m.cursorPos == len(m.parentBranch) {
-			s += m.parentBranch + lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(" ")
+		if m.CursorPos == len(m.ParentBranch) {
+			s += m.ParentBranch + styles.Normal.Background(lipgloss.Color(styles.ColorSubdued)).Render(" ")
 		} else {
-			s += m.parentBranch[:m.cursorPos] +
-				lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(string(m.parentBranch[m.cursorPos])) +
-				m.parentBranch[m.cursorPos+1:]
+			s += m.ParentBranch[:m.CursorPos] +
+				styles.Normal.Background(lipgloss.Color(styles.ColorSubdued)).Render(string(m.ParentBranch[m.CursorPos])) +
+				m.ParentBranch[m.CursorPos+1:]
 		}
 	} else {
-		s += parentBranchLabel + m.parentBranch
+		s += parentBranchLabel + m.ParentBranch
 	}
 
 	// Error message
-	if m.err != "" {
-		s += "\n\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")).Render(m.err)
-	}
+	s += m.RenderError()
 
 	// Help text
-	helpText := "Tab: Switch fields • Enter: Confirm • Esc: Return to menu"
-
-	s += "\n\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render(helpText)
+	s += m.RenderHelpText("Tab: Switch fields • Enter: Confirm • Esc: Return to menu")
 
 	return s
 }
 
 // RunStackPrompt shows a prompt for the stack command
 func RunStackPrompt() (string, string, bool) {
-	p := tea.NewProgram(stackPromptModel{
-		currentField: 0,
-		parentBranch: "main", // Default parent branch
-	})
+	p := tea.NewProgram(NewStackPromptModel())
 
 	m, err := p.Run()
 	if err != nil {
@@ -179,15 +176,15 @@ func RunStackPrompt() (string, string, bool) {
 		return "", "", false
 	}
 
-	if m, ok := m.(stackPromptModel); ok {
+	if m, ok := m.(StackPromptModel); ok {
 		// Check if user cancelled
-		if m.err == "cancelled" {
+		if m.IsCancelled() {
 			return "", "", false
 		}
 
 		// Check if both fields are filled
-		if m.newBranch != "" && m.parentBranch != "" {
-			return m.newBranch, m.parentBranch, true
+		if m.NewBranch != "" && m.ParentBranch != "" {
+			return m.NewBranch, m.ParentBranch, true
 		}
 	}
 

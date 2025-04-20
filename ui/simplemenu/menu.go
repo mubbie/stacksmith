@@ -2,113 +2,111 @@
 package simplemenu
 
 import (
-	"fmt"
-	"os"
+    "fmt"
+    "os"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+    tea "github.com/charmbracelet/bubbletea"
+    "github.com/mubbie/stacksmith/ui/styles"
 )
 
-type item struct {
-	title, desc, emoji, command string
+type MenuItem struct {
+    Title   string
+    Desc    string
+    Emoji   string
+    Command string
 }
 
-type model struct {
-	choices  []item
-	cursor   int
-	selected string
+type MenuModel struct {
+    Choices  []MenuItem
+    Cursor   int
+    Selected string
 }
 
-func (m model) Init() tea.Cmd {
-	return nil
+func (m MenuModel) Init() tea.Cmd {
+    return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
+func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.KeyMsg:
+        switch msg.String() {
+        case "ctrl+c", "q":
+            return m, tea.Quit
 
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
+        case "up", "k":
+            if m.Cursor > 0 {
+                m.Cursor--
+            }
 
-		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
+        case "down", "j":
+            if m.Cursor < len(m.Choices)-1 {
+                m.Cursor++
+            }
 
-		case "enter", " ":
-			m.selected = m.choices[m.cursor].command
-			return m, tea.Quit
-		}
-	}
+        case "enter", " ":
+            m.Selected = m.Choices[m.Cursor].Command
+            return m, tea.Quit
+        }
+    }
 
-	return m, nil
+    return m, nil
 }
 
-func (m model) View() string {
-	s := "🧑‍🏭 Stacksmith\n\n"
+func (m MenuModel) View() string {
+    s := styles.Title.Render("🧑‍🏭 Stacksmith") + "\n\n"
 
-	for i, choice := range m.choices {
-		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
-		}
+    for i, choice := range m.Choices {
+        cursor := styles.CursorStyle(i == m.Cursor)
 
-		title := fmt.Sprintf("%s %s", choice.emoji, choice.title)
-		desc := choice.desc
+        titleStyle := styles.Normal
+        descStyle := styles.Subdued
 
-		titleStyle := lipgloss.NewStyle()
-		descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#666666"))
+        if m.Cursor == i {
+            titleStyle = styles.Selected
+            descStyle = styles.Subdued
+        }
 
-		if m.cursor == i {
-			titleStyle = titleStyle.Foreground(lipgloss.Color("#ffc27d")).Bold(true)
-			descStyle = descStyle.Foreground(lipgloss.Color("#999999"))
-		}
+        title := fmt.Sprintf("%s %s", choice.Emoji, choice.Title)
+        
+        choiceLine := fmt.Sprintf("%s %s\n     %s", 
+            cursor,
+            titleStyle.Render(title),
+            descStyle.Render(choice.Desc))
+        
+        // Add more space between items
+        s += choiceLine + "\n\n"
+    }
 
-		choiceLine := fmt.Sprintf("%s %s\n     %s", 
-			lipgloss.NewStyle().Foreground(lipgloss.Color("#ffc27d")).Render(cursor),
-			titleStyle.Render(title),
-			descStyle.Render(desc))
-		
-		// Add more space between items
-		s += choiceLine + "\n\n"
-	}
+    s += styles.FormatHelpText("↑/↓: Navigate • Enter: Select • q: Quit")
 
-	s += lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render("↑/↓: Navigate • Enter: Select • q: Quit")
-
-	// Return the UI as a string without extra newlines
-	return s
+    return s
 }
 
 // RunMenu shows a simple command selection menu and returns the selected command
 func RunMenu() string {
-	choices := []item{
-		{title: "Stack", desc: "Create a new branch atop another", emoji: "🪵", command: "stack"},
-		{title: "Sync", desc: "Rebase multiple branches sequentially", emoji: "🧽", command: "sync"},
-		{title: "Fix PR", desc: "Rebase one branch onto a new base", emoji: "🔧", command: "fix-pr"},
-		{title: "Push", desc: "Smart push with upstream detection", emoji: "⬆️", command: "push"},
-		{title: "Graph", desc: "Show commit graph", emoji: "🌳", command: "graph"},
-		{title: "TUI", desc: "Full-screen DAG browser and stack navigator", emoji: "🖥", command: "tui"},
-		{title: "Quit", desc: "Exit Stacksmith", emoji: "👋", command: "quit"},
-	}
+    choices := []MenuItem{
+        {Title: "Stack", Desc: "Create a new branch atop another", Emoji: "🪵", Command: "stack"},
+        {Title: "Sync", Desc: "Rebase multiple branches sequentially", Emoji: "🧽", Command: "sync"},
+        {Title: "Fix PR", Desc: "Rebase one branch onto a new base", Emoji: "🔧", Command: "fix-pr"},
+        {Title: "Push", Desc: "Smart push with upstream detection", Emoji: "⬆️", Command: "push"},
+        {Title: "Graph", Desc: "Show commit graph", Emoji: "🌳", Command: "graph"},
+        {Title: "TUI", Desc: "Full-screen DAG browser and stack navigator", Emoji: "🖥", Command: "tui"},
+        {Title: "Quit", Desc: "Exit Stacksmith", Emoji: "👋", Command: "quit"},
+    }
 
-	p := tea.NewProgram(model{
-		choices: choices,
-	})
+    p := tea.NewProgram(MenuModel{
+        Choices: choices,
+    })
 
-	m, err := p.Run()
-	if err != nil {
-		fmt.Printf("Error running menu: %v\n", err)
-		os.Exit(1)
-	}
+    m, err := p.Run()
+    if err != nil {
+        fmt.Printf("Error running menu: %v\n", err)
+        os.Exit(1)
+    }
 
-	if m, ok := m.(model); ok {
-		return m.selected
-	}
+    if m, ok := m.(MenuModel); ok {
+        return m.Selected
+    }
 
-	return ""
+    return ""
 }
