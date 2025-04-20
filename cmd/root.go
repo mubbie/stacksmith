@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/mubbie/stacksmith/ui/simplemenu"
 	"github.com/spf13/cobra"
@@ -52,19 +51,38 @@ func init() {
 
 // launchMainMenu starts the main menu and handles the selected command
 func launchMainMenu() {
-	selectedCmd := simplemenu.RunMenu()
-	
-	if selectedCmd == "" || selectedCmd == "quit" {
-		return
-	}
-	
-	// Execute the selected command
-	cmd := exec.Command(os.Args[0], selectedCmd)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		fmt.Printf("❌ Error executing command: %v\n", err)
+	// Loop until the user selects "quit" or exits with Ctrl+C
+	for {
+		selectedCmd := simplemenu.RunMenu()
+		
+		if selectedCmd == "" || selectedCmd == "quit" {
+			// Exit the loop and return to the shell
+			return
+		}
+		
+		// Execute the selected command directly - this allows us to return to the menu properly
+		// instead of launching as a separate process
+		switch selectedCmd {
+		case "stack":
+			stackCmd.Run(nil, []string{})
+		case "sync":
+			syncCmd.Run(nil, []string{})
+		case "fix-pr":
+			fixPrCmd.Run(nil, []string{})
+		case "push":
+			pushCmd.Run(nil, []string{})
+		case "graph":
+			graphCmd.Run(nil, []string{})
+		case "tui":
+			tuiCmd.Run(nil, []string{})
+		default:
+			fmt.Printf("Unknown command: %s\n", selectedCmd)
+		}
+		
+		// Pause to let the user see the output before showing menu again
+		fmt.Println()
+		fmt.Print("Press Enter to return to menu...")
+		fmt.Scanln() // Wait for Enter key
+		fmt.Println()
 	}
 }

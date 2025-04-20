@@ -11,6 +11,7 @@ const (
 	Green  = "\033[0;32m"
 	Blue   = "\033[0;34m"
 	Yellow = "\033[1;33m"
+	Cyan   = "\033[0;36m"
 	Reset  = "\033[0m" // No Color
 )
 
@@ -28,7 +29,7 @@ func NewPrinter(appName string) *Printer {
 
 // Success prints a success message with icon
 func (p *Printer) Success(message string) {
-	fmt.Printf("%s%s%s ✓ %s\n", Green, p.AppName, Reset, message)
+	fmt.Printf("%s%s%s ✅ %s\n", Green, p.AppName, Reset, message)
 }
 
 // Info prints an info message with icon
@@ -43,7 +44,7 @@ func (p *Printer) Warning(message string) {
 
 // Error prints an error message with icon
 func (p *Printer) Error(message string) {
-	fmt.Printf("%s%s%s ✗ %s\n", Red, p.AppName, Reset, message)
+	fmt.Printf("%s%s%s ❌ %s\n", Red, p.AppName, Reset, message)
 }
 
 // Smith prints a message with smith emoji
@@ -97,4 +98,20 @@ func (p *Printer) FixPrStart(branch, target string) {
 func (p *Printer) RetargetReminder(branch, target string) {
 	fmt.Printf("%s%s%s 📢 Don't forget to retarget the PR for %s to %s!\n", 
 		Yellow, p.AppName, Reset, branch, target)
+}
+
+// Divider prints a horizontal divider
+func (p *Printer) Divider() {
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+}
+
+// ComingSoon prints a "coming soon" message
+func (p *Printer) ComingSoon(feature string) {
+	fmt.Printf("%s%s%s 🔧 %s coming soon...\n", 
+		Cyan, p.AppName, Reset, feature)
+}
+
+// BulletPoint prints a bullet point item
+func (p *Printer) BulletPoint(text string) {
+	fmt.Printf("  • %s\n", text)
 }

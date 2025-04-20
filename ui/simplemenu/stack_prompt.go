@@ -10,11 +10,11 @@ import (
 
 // StackPromptModel handles user input for the stack command
 type stackPromptModel struct {
-	newBranch     string
-	parentBranch  string
-	currentField  int
-	cursorPos     int
-	err           string
+	newBranch    string
+	parentBranch string
+	currentField int
+	cursorPos    int
+	err          string
 }
 
 func (m stackPromptModel) Init() tea.Cmd {
@@ -26,6 +26,10 @@ func (m stackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
+			// Don't set an error message, just quietly return a signal
+			m.newBranch = ""
+			m.parentBranch = ""
+			m.err = "cancelled" // Internal signal, won't be displayed
 			return m, tea.Quit
 
 		case "enter":
@@ -38,12 +42,12 @@ func (m stackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursorPos = len(m.parentBranch)
 				return m, nil
 			}
-			
+
 			if m.parentBranch == "" {
 				m.err = "Parent branch name cannot be empty"
 				return m, nil
 			}
-			
+
 			// Both fields are filled, time to return
 			return m, tea.Quit
 
@@ -103,20 +107,28 @@ func (m stackPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m stackPromptModel) View() string {
-	s := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#ffc27d")).Render("🪵 Create a new branch\n\n")
+	// Use title styling but ensure no padding or indentation is applied
+	title := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#ffc27d")).
+		PaddingLeft(0). // Explicitly set padding to 0
+		MarginLeft(0).  // Explicitly set margin to 0
+		Render("🪵 Create a new branch")
+
+	s := title + "\n\n"
 
 	// New branch field
 	newBranchLabel := "New branch name: "
 	if m.currentField == 0 {
 		s += lipgloss.NewStyle().Bold(true).Render(newBranchLabel)
-		
+
 		// Insert cursor at the current position
 		if m.cursorPos == len(m.newBranch) {
 			s += m.newBranch + lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(" ")
 		} else {
-			s += m.newBranch[:m.cursorPos] + 
-				 lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(string(m.newBranch[m.cursorPos])) + 
-				 m.newBranch[m.cursorPos+1:]
+			s += m.newBranch[:m.cursorPos] +
+				lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(string(m.newBranch[m.cursorPos])) +
+				m.newBranch[m.cursorPos+1:]
 		}
 	} else {
 		s += newBranchLabel + m.newBranch
@@ -128,14 +140,14 @@ func (m stackPromptModel) View() string {
 	parentBranchLabel := "Parent branch: "
 	if m.currentField == 1 {
 		s += lipgloss.NewStyle().Bold(true).Render(parentBranchLabel)
-		
+
 		// Insert cursor at the current position
 		if m.cursorPos == len(m.parentBranch) {
 			s += m.parentBranch + lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(" ")
 		} else {
-			s += m.parentBranch[:m.cursorPos] + 
-				 lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(string(m.parentBranch[m.cursorPos])) + 
-				 m.parentBranch[m.cursorPos+1:]
+			s += m.parentBranch[:m.cursorPos] +
+				lipgloss.NewStyle().Background(lipgloss.Color("#666666")).Render(string(m.parentBranch[m.cursorPos])) +
+				m.parentBranch[m.cursorPos+1:]
 		}
 	} else {
 		s += parentBranchLabel + m.parentBranch
@@ -147,7 +159,9 @@ func (m stackPromptModel) View() string {
 	}
 
 	// Help text
-	s += "\n\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render("Tab: Switch fields • Enter: Confirm • Esc: Cancel")
+	helpText := "Tab: Switch fields • Enter: Confirm • Esc: Return to menu"
+
+	s += "\n\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render(helpText)
 
 	return s
 }
@@ -166,6 +180,11 @@ func RunStackPrompt() (string, string, bool) {
 	}
 
 	if m, ok := m.(stackPromptModel); ok {
+		// Check if user cancelled
+		if m.err == "cancelled" {
+			return "", "", false
+		}
+
 		// Check if both fields are filled
 		if m.newBranch != "" && m.parentBranch != "" {
 			return m.newBranch, m.parentBranch, true

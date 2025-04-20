@@ -1,9 +1,12 @@
+// cmd/sync.go
 package cmd
 
 import (
 	"fmt"
 
 	"github.com/mubbie/stacksmith/core"
+	"github.com/mubbie/stacksmith/render"
+	"github.com/mubbie/stacksmith/ui/simplemenu"
 	"github.com/spf13/cobra"
 )
 
@@ -11,47 +14,63 @@ var syncCmd = &cobra.Command{
 	Use:   "sync [branch1] [branch2] ...",
 	Short: "🧽 Rebase multiple branches sequentially",
 	Long:  `Rebase and push a stack of branches in sequence.`,
-	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		branches := args
+		var branches []string
+		var success bool
+		
+		printer := render.NewPrinter("stacksmith")
+		
+		if len(args) < 2 {
+			// Not enough arguments, launch the interactive prompt
+			branches, success = simplemenu.RunSyncPrompt()
+			if !success {
+				// Command was cancelled or failed, just return silently
+				return
+			}
+		} else {
+			branches = args
+		}
 		
 		git := core.NewGitExecutor("")
 		
-		fmt.Println("🧽 Polishing your branch stack... 🪞")
+		printer.SyncStart()
 		
 		for i := 1; i < len(branches); i++ {
 			child := branches[i]
 			parent := branches[i-1]
 			
-			fmt.Printf("🔄 Rebasing %s onto %s...\n", child, parent)
+			printer.RebaseStart(child, parent)
 			
 			err := git.CheckoutBranch(child)
 			if err != nil {
-				fmt.Printf("Error checking out %s: %s\n", child, err)
+				printer.Error(fmt.Sprintf("Error checking out %s: %s", child, err))
 				return
 			}
 			
 			err = git.FetchRemote()
 			if err != nil {
-				fmt.Printf("Error fetching remote: %s\n", err)
+				printer.Error(fmt.Sprintf("Error fetching remote: %s", err))
 				return
 			}
 			
 			err = git.RebaseBranch(parent)
 			if err != nil {
-				fmt.Printf("Error rebasing %s onto %s: %s\n", child, parent, err)
+				printer.Error(fmt.Sprintf("Error rebasing %s onto %s: %s", child, parent, err))
 				return
 			}
 			
 			err = git.PushBranch()
 			if err != nil {
-				fmt.Printf("Error pushing %s: %s\n", child, err)
+				printer.Error(fmt.Sprintf("Error pushing %s: %s", child, err))
 				return
 			}
 			
-			fmt.Printf("🚀 Pushed %s upstream.\n", child)
+			printer.PushSuccess(child)
 		}
+		
+		printer.Success("Stack sync complete!")
 	},
+	Args: cobra.MaximumNArgs(100), // Allow multiple branches
 }
 
 func init() {

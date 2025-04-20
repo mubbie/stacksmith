@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mubbie/stacksmith/core"
+	"github.com/mubbie/stacksmith/render"
 	"github.com/mubbie/stacksmith/ui/simplemenu"
 	"github.com/spf13/cobra"
 )
@@ -17,11 +18,14 @@ var stackCmd = &cobra.Command{
 		var newBranch, parentBranch string
 		var success bool
 		
+		printer := render.NewPrinter("stacksmith")
+		
 		if len(args) < 2 {
 			// Not enough arguments, launch the interactive prompt
 			newBranch, parentBranch, success = simplemenu.RunStackPrompt()
 			if !success {
-				return // User cancelled
+				// Command was cancelled or failed, just return silently
+				return
 			}
 		} else {
 			newBranch = args[0]
@@ -32,11 +36,11 @@ var stackCmd = &cobra.Command{
 		
 		err := git.CreateBranch(newBranch, parentBranch)
 		if err != nil {
-			fmt.Printf("Error creating branch: %s\n", err)
+			printer.Error(fmt.Sprintf("Error creating branch: %s", err))
 			return
 		}
 		
-		fmt.Printf("🪵 Forged new branch %s atop %s. 🌲\n", newBranch, parentBranch)
+		printer.ForgeSuccess(newBranch, parentBranch)
 	},
 	Args: cobra.MaximumNArgs(2),
 }

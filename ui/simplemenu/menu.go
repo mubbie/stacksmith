@@ -4,7 +4,6 @@ package simplemenu
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -51,54 +50,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var builder strings.Builder
-
-	builder.WriteString(lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("205")). // purple-pinkish
-		Render("🧑‍🏭 Stacksmith") + "\n\n")
+	s := "🧑‍🏭 Stacksmith\n\n"
 
 	for i, choice := range m.choices {
-		isSelected := m.cursor == i
-
 		cursor := " "
-		if isSelected {
+		if m.cursor == i {
 			cursor = ">"
 		}
 
-		// Styles
-		cursorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#ffc27d"))
+		title := fmt.Sprintf("%s %s", choice.emoji, choice.title)
+		desc := choice.desc
+
 		titleStyle := lipgloss.NewStyle()
 		descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#666666"))
 
-		if isSelected {
-			titleStyle = titleStyle.Bold(true).Foreground(lipgloss.Color("#ffc27d"))
+		if m.cursor == i {
+			titleStyle = titleStyle.Foreground(lipgloss.Color("#ffc27d")).Bold(true)
 			descStyle = descStyle.Foreground(lipgloss.Color("#999999"))
 		}
 
-		// Build lines
-		title := fmt.Sprintf("%s %s", choice.emoji, choice.title)
-		titleLine := lipgloss.JoinHorizontal(1,
-			cursorStyle.Render(cursor),
+		choiceLine := fmt.Sprintf("%s %s\n     %s", 
+			lipgloss.NewStyle().Foreground(lipgloss.Color("#ffc27d")).Render(cursor),
 			titleStyle.Render(title),
-		)
-
-		descLine := lipgloss.NewStyle().
-			MarginLeft(4). // indent description
-			Render(descStyle.Render(choice.desc))
-
-		// Combine with vertical spacing
-		itemBlock := lipgloss.JoinVertical(lipgloss.Top, titleLine, descLine)
-		builder.WriteString(itemBlock + "\n\n") // add spacing between items
+			descStyle.Render(desc))
+		
+		// Add more space between items
+		s += choiceLine + "\n\n"
 	}
 
-	builder.WriteString(
-		lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#444444")).
-			Render("↑/↓: Navigate • Enter: Select • q: Quit"),
-	)
+	s += lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render("↑/↓: Navigate • Enter: Select • q: Quit")
 
-	return builder.String()
+	// Return the UI as a string without extra newlines
+	return s
 }
 
 // RunMenu shows a simple command selection menu and returns the selected command
