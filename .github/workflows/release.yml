@@ -27,9 +27,9 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v4
         with:
-          distribution: goreleaser
+          distribution: goreleaser-pro
           version: latest
           args: release --clean
         env:
