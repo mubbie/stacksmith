@@ -66,10 +66,8 @@ jobs:
 
       - name: Prepare installer directory
         run: |
-          mkdir -p installer/artifact
-          # Copy from extracted directory
-          Copy-Item extracted/stacksmith.exe installer/artifact/
-          # Note: build/installer/setup.iss already exists from the checkout
+          mkdir -p build/installer/artifact
+          Copy-Item extracted/stacksmith.exe build/installer/artifact/
 
       - name: Build Installer
         shell: powershell
