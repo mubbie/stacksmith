@@ -1,0 +1,144 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19'
+      
+      - name: Generate completion scripts
+        run: |
+          mkdir -p completions
+          go run main.go completion bash > completions/stacksmith.bash
+          go run main.go completion zsh > completions/stacksmith.zsh
+          go run main.go completion fish > completions/stacksmith.fish
+      
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Save release version for other jobs
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    outputs:
+      version: ${{ steps.get_version.outputs.VERSION }}
+
+  # Windows-specific installer job
+  windows-installer:
+    needs: goreleaser
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Download Windows binary
+        uses: actions/download-artifact@v3
+        with:
+          name: stacksmith_${{ needs.goreleaser.outputs.VERSION }}_windows_amd64.zip
+          path: ./win-installer/
+      
+      - name: Extract binary
+        working-directory: ./win-installer
+        run: 7z x stacksmith_${{ needs.goreleaser.outputs.VERSION }}_windows_amd64.zip
+      
+      - name: Setup Inno Setup
+        run: |
+          choco install innosetup -y
+      
+      - name: Build Installer
+        run: |
+          iscc /DMyAppVersion="${{ needs.goreleaser.outputs.VERSION }}" "./win-installer/setup.iss"
+      
+      - name: Upload installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./win-installer/Output/stacksmith-setup.exe
+          asset_name: stacksmith-${{ needs.goreleaser.outputs.VERSION }}-setup.exe
+          asset_content_type: application/octet-stream
+
+  # Generate winget manifest
+  winget-manifest:
+    needs: [goreleaser, windows-installer]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Generate SHA256
+        run: |
+          curl -sL https://github.com/mubbie/stacksmith/releases/download/v${{ needs.goreleaser.outputs.VERSION }}/stacksmith-${{ needs.goreleaser.outputs.VERSION }}-setup.exe -o installer.exe
+          INSTALLER_SHA=$(sha256sum installer.exe | cut -d' ' -f1)
+          echo "INSTALLER_SHA=$INSTALLER_SHA" >> $GITHUB_ENV
+      
+      - name: Generate winget manifest
+        run: |
+          mkdir -p ./manifests/m/Mubbie/Stacksmith/${{ needs.goreleaser.outputs.VERSION }}
+          cat > ./manifests/m/Mubbie/Stacksmith/${{ needs.goreleaser.outputs.VERSION }}/Mubbie.Stacksmith.installer.yaml << EOF
+          PackageIdentifier: Mubbie.Stacksmith
+          PackageVersion: ${{ needs.goreleaser.outputs.VERSION }}
+          InstallerType: inno
+          Installers:
+            - Architecture: x64
+              InstallerUrl: https://github.com/mubbie/stacksmith/releases/download/v${{ needs.goreleaser.outputs.VERSION }}/stacksmith-${{ needs.goreleaser.outputs.VERSION }}-setup.exe
+              InstallerSha256: ${{ env.INSTALLER_SHA }}
+          ManifestType: installer
+          ManifestVersion: 1.4.0
+          EOF
+          
+          cat > ./manifests/m/Mubbie/Stacksmith/${{ needs.goreleaser.outputs.VERSION }}/Mubbie.Stacksmith.locale.en-US.yaml << EOF
+          PackageIdentifier: Mubbie.Stacksmith
+          PackageVersion: ${{ needs.goreleaser.outputs.VERSION }}
+          PackageLocale: en-US
+          Publisher: Mubbie
+          PackageName: Stacksmith
+          License: MIT
+          ShortDescription: Ultralight Artisan Git Stacking Tool
+          ManifestType: defaultLocale
+          ManifestVersion: 1.4.0
+          EOF
+          
+          cat > ./manifests/m/Mubbie/Stacksmith/${{ needs.goreleaser.outputs.VERSION }}/Mubbie.Stacksmith.yaml << EOF
+          PackageIdentifier: Mubbie.Stacksmith
+          PackageVersion: ${{ needs.goreleaser.outputs.VERSION }}
+          DefaultLocale: en-US
+          ManifestType: version
+          ManifestVersion: 1.4.0
+          EOF
+      
+      - name: Create PR to winget-pkgs
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.WINGET_PR_TOKEN }}
+          path: ./manifests
+          commit-message: Add Stacksmith ${{ needs.goreleaser.outputs.VERSION }}
+          title: Add Stacksmith ${{ needs.goreleaser.outputs.VERSION }}
+          body: |
+            New version of Stacksmith: ${{ needs.goreleaser.outputs.VERSION }}
+            
+            PR created by GitHub Actions
+          branch: stacksmith-${{ needs.goreleaser.outputs.VERSION }}
+          base: master
+          repository: microsoft/winget-pkgs

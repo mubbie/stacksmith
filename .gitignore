@@ -36,3 +36,7 @@ Thumbs.db
 *.deb
 *.rpm
 /homebrew-tap/
+
+# others
+.DS_Store
+.qodo/
