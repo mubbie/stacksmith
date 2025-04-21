@@ -1,10 +1,13 @@
 # Stacksmith
 
-<p align="center">
-  <img src="assets/stacksmith-ui.gif" alt="Stacksmith UI demo" width="800"/>
-</p>
+  <img src="https://vhs.charm.sh/vhs-4MMT5EmmcjU7WdktwoOm8c.gif" alt="Made with VHS">
+  <p align="center">
+    <a href="https://vhs.charm.sh">
+      <img src="https://stuff.charm.sh/vhs/badge.svg">
+    </a>
+  </p>
 
-<p align="center">
+  <p align="center">
   <a href="https://github.com/mubbie/stacksmith/releases">
     <img src="https://img.shields.io/github/v/release/mubbie/stacksmith" alt="Latest Release">
   </a>
