@@ -121,9 +121,14 @@ jobs:
           PackageVersion: ${VERSION}
           PackageLocale: en-US
           Publisher: Mubbie
+          PublisherUrl: https://github.com/mubbie
+          PublisherSupportUrl: https://github.com/mubbie/stacksmith/issues
           PackageName: Stacksmith
+          PackageUrl: https://github.com/mubbie/stacksmith/
           License: MIT
+          LicenseUrl: https://github.com/mubbie/stacksmith/blob/main/LICENSE
           ShortDescription: Ultralight Artisan Git Stacking Tool
+          ReleaseNotesUrl: https://github.com/mubbie/stacksmith/releases/tag/v${VERSION}
           ManifestType: defaultLocale
           ManifestVersion: 1.10.0
           EOF
