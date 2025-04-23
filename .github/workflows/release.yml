@@ -59,7 +59,9 @@ jobs:
 
       - name: Extract binary
         run: |
+          # Create a clean extraction directory
           mkdir -p extracted
+          # Extract with -y flag to automatically answer yes to all prompts
           7z x stacksmith.zip -oextracted -y
 
       - name: Prepare installer directory
@@ -99,28 +101,12 @@ jobs:
         run: |
           VERSION=${{ needs.goreleaser.outputs.version }}
           mkdir -p ./manifests/m/Mubbie/Stacksmith/${VERSION}
-          TODAY=$(date +%Y-%m-%d)
 
-          cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.installer.yaml <<EOF
+          cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.installer.yaml << EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
           PackageIdentifier: Mubbie.Stacksmith
           PackageVersion: ${VERSION}
-          PackageLocale: en-US
           InstallerType: inno
-          Scope: machine
-          InstallModes:
-            - interactive
-            - silent
-            - silentWithProgress
-          InstallerSwitches:
-            Silent: /VERYSILENT
-            SilentWithProgress: /SILENT
-            Interactive: ""
-          UpgradeBehavior: install
-          ReleaseDate: ${TODAY}
-          AppsAndFeaturesEntries:
-            - Publisher: Mubbie
-              DisplayName: Stacksmith
           Installers:
             - Architecture: x64
               InstallerUrl: https://github.com/mubbie/stacksmith/releases/download/v${VERSION}/stacksmith-setup.exe
@@ -129,7 +115,7 @@ jobs:
           ManifestVersion: 1.10.0
           EOF
 
-          cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.locale.en-US.yaml <<EOF
+          cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.locale.en-US.yaml << EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
           PackageIdentifier: Mubbie.Stacksmith
           PackageVersion: ${VERSION}
@@ -138,16 +124,11 @@ jobs:
           PackageName: Stacksmith
           License: MIT
           ShortDescription: Ultralight Artisan Git Stacking Tool
-          Description: Stacksmith is an artisan git stacker for faster, cleaner pull requests.
-          Tags:
-            - git
-            - cli
-            - devtools
           ManifestType: defaultLocale
           ManifestVersion: 1.10.0
           EOF
 
-          cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.yaml <<EOF
+          cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.yaml << EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.10.0.schema.json
           PackageIdentifier: Mubbie.Stacksmith
           PackageVersion: ${VERSION}
@@ -158,30 +139,48 @@ jobs:
 
       - name: Create Fork via API
         run: |
+          # Create fork using GitHub API
           curl -X POST \
             -H "Authorization: token ${{ secrets.WINGET_PR_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/microsoft/winget-pkgs/forks
+          
+          # Wait for fork creation to complete (this can take a few seconds)
+          echo "Waiting for fork to be created..."
           sleep 30
 
       - name: Setup Git and Create PR
         run: |
           VERSION=${{ needs.goreleaser.outputs.version }}
           PAT=${{ secrets.WINGET_PR_TOKEN }}
+          
+          # Configure git
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          
+          # Clone the fork (retry a few times if needed)
           for i in {1..5}; do
             echo "Attempt $i to clone the fork..."
             git clone https://${PAT}@github.com/${{ github.repository_owner }}/winget-pkgs.git && break || sleep 15
           done
+          
           cd winget-pkgs
+          
+          # Create new branch
           git checkout -b stacksmith-${VERSION}
+          
+          # Create directories and copy files
           mkdir -p manifests/m/Mubbie/Stacksmith/${VERSION}
           cp ../manifests/m/Mubbie/Stacksmith/${VERSION}/* manifests/m/Mubbie/Stacksmith/${VERSION}/
+          
+          # Commit changes
           git add manifests/m/Mubbie/Stacksmith/${VERSION}
           git commit -m "Add Stacksmith ${VERSION}"
+          
+          # Push to fork
           git push -u origin stacksmith-${VERSION} --force
-
+          
+          # Create PR using curl
           curl -X POST \
             -H "Authorization: token ${PAT}" \
             -H "Accept: application/vnd.github.v3+json" \
