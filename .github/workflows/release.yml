@@ -103,6 +103,7 @@ jobs:
           mkdir -p ./manifests/m/Mubbie/Stacksmith/${VERSION}
 
           cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.installer.yaml << EOF
+          # yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
           PackageIdentifier: Mubbie.Stacksmith
           PackageVersion: ${VERSION}
           InstallerType: inno
@@ -115,6 +116,7 @@ jobs:
           EOF
 
           cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.locale.en-US.yaml << EOF
+          # yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
           PackageIdentifier: Mubbie.Stacksmith
           PackageVersion: ${VERSION}
           PackageLocale: en-US
@@ -127,6 +129,7 @@ jobs:
           EOF
 
           cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.yaml << EOF
+          # yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.10.0.schema.json
           PackageIdentifier: Mubbie.Stacksmith
           PackageVersion: ${VERSION}
           DefaultLocale: en-US
