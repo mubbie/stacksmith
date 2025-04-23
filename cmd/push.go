@@ -16,22 +16,22 @@ var pushCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		printer := render.NewPrinter("stacksmith")
 		git := core.NewGitExecutor("")
-		
+
 		currentBranch, err := git.GetCurrentBranch()
 		if err != nil {
 			printer.Error(fmt.Sprintf("Error getting current branch: %s", err))
 			return
 		}
-		
+
 		hasUpstream, err := git.HasUpstream()
 		if err != nil {
 			printer.Error(fmt.Sprintf("Error checking upstream: %s", err))
 			return
 		}
-		
+
 		// Show a spinner or progress indicator
 		printer.Info(fmt.Sprintf("Pushing branch %s...", currentBranch))
-		
+
 		if hasUpstream {
 			err = git.PushBranch()
 			if err != nil {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/mubbie/stacksmith/internal/core"
 	"github.com/mubbie/stacksmith/internal/render"
-	"github.com/spf13/cobra"	
+	"github.com/spf13/cobra"
 )
 
 var graphCmd = &cobra.Command{
@@ -16,16 +16,16 @@ var graphCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		printer := render.NewPrinter("stacksmith")
 		git := core.NewGitExecutor("")
-		
+
 		printer.GraphHeader()
 		printer.Divider()
-		
+
 		graph, err := git.ShowGraph()
 		if err != nil {
 			printer.Error(fmt.Sprintf("Error showing graph: %s", err))
 			return
 		}
-		
+
 		fmt.Println(graph)
 		printer.Divider()
 		printer.Info("Tip: For a more detailed view, try 'stacksmith tui' (coming soon)")

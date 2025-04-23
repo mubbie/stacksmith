@@ -14,7 +14,7 @@ var tuiCmd = &cobra.Command{
 	Long:  `Launch the full-screen terminal UI for managing git branch stacks.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		printer := render.NewPrinter("stacksmith")
-		
+
 		printer.ComingSoon("Full-screen TUI")
 		printer.Divider()
 		fmt.Println("The TUI will feature:")

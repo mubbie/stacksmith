@@ -95,46 +95,46 @@ func (m SyncPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m SyncPromptModel) View() string {
-    s := m.RenderTitle()
+	s := m.RenderTitle()
 
-    if m.Step == selectingBranches {
-        // Branch selection screen
-        s += "Select branches to sync in order (parent to child):\n"
-        s += "(use space to select, enter to continue)\n\n"
-        // Show checkboxes (true) and order numbers (true)
-        s += m.BranchList.Render(true, true)
-        
-    } else if m.Step == confirmingSelection {
-        // Confirmation screen
-        s += "Ready to sync branches in this order:\n\n"
-        
-        selectedBranches := m.BranchList.GetSelectedItems()
-        
-        for i, name := range selectedBranches {
-            if i > 0 {
-                s += fmt.Sprintf("  %d. %s ← %s\n", i+1, name, selectedBranches[i-1])
-            } else {
-                s += fmt.Sprintf("  %d. %s (base)\n", i+1, name)
-            }
-        }
-        
-        s += "\n" + styles.Success.Render("Press Enter to confirm and begin sync")
-    }
+	if m.Step == selectingBranches {
+		// Branch selection screen
+		s += "Select branches to sync in order (parent to child):\n"
+		s += "(use space to select, enter to continue)\n\n"
+		// Show checkboxes (true) and order numbers (true)
+		s += m.BranchList.Render(true, true)
 
-    // Error message
-    s += m.RenderError()
+	} else if m.Step == confirmingSelection {
+		// Confirmation screen
+		s += "Ready to sync branches in this order:\n\n"
 
-    // Help text
-    helpText := ""
-    if m.Step == selectingBranches {
-        helpText = "↑/↓: Navigate • Space: Select • Enter: Continue • Esc: Return to menu"
-    } else {
-        helpText = "Enter: Confirm • Esc: Return to menu"
-    }
-    
-    s += m.RenderHelpText(helpText)
+		selectedBranches := m.BranchList.GetSelectedItems()
 
-    return s
+		for i, name := range selectedBranches {
+			if i > 0 {
+				s += fmt.Sprintf("  %d. %s ← %s\n", i+1, name, selectedBranches[i-1])
+			} else {
+				s += fmt.Sprintf("  %d. %s (base)\n", i+1, name)
+			}
+		}
+
+		s += "\n" + styles.Success.Render("Press Enter to confirm and begin sync")
+	}
+
+	// Error message
+	s += m.RenderError()
+
+	// Help text
+	helpText := ""
+	if m.Step == selectingBranches {
+		helpText = "↑/↓: Navigate • Space: Select • Enter: Continue • Esc: Return to menu"
+	} else {
+		helpText = "Enter: Confirm • Esc: Return to menu"
+	}
+
+	s += m.RenderHelpText(helpText)
+
+	return s
 }
 
 // RunSyncPrompt shows a prompt for the sync command and returns selected branches

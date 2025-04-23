@@ -1,6 +1,6 @@
 package core
 
-import (	
+import (
 	"bytes"
 	"fmt"
 	"os/exec"
@@ -78,14 +78,14 @@ func (g *GitExecutor) Execute(args ...string) (string, error) {
 	if err != nil {
 		// Perform error detection based on stderr output
 		stderrStr := stderr.String()
-		
+
 		// Check for common error patterns and return specific error types
 		if strings.Contains(stderrStr, "not a git repository") {
 			return "", fmt.Errorf("not in a git repository")
 		}
-		
-		if strings.Contains(stderrStr, "did not match any") && 
-		   (strings.Contains(stderrStr, "pathspec") || strings.Contains(stderrStr, "reference")) {
+
+		if strings.Contains(stderrStr, "did not match any") &&
+			(strings.Contains(stderrStr, "pathspec") || strings.Contains(stderrStr, "reference")) {
 			// Try to extract the branch name from args
 			branchName := ""
 			for _, arg := range args {
@@ -96,9 +96,9 @@ func (g *GitExecutor) Execute(args ...string) (string, error) {
 			}
 			return "", &BranchNotFoundError{BranchName: branchName}
 		}
-		
-		if strings.Contains(stderrStr, "conflict") && 
-		   (strings.Contains(stderrStr, "merge") || strings.Contains(stderrStr, "rebase")) {
+
+		if strings.Contains(stderrStr, "conflict") &&
+			(strings.Contains(stderrStr, "merge") || strings.Contains(stderrStr, "rebase")) {
 			currentBranch, _ := g.GetCurrentBranch()
 			targetBranch := ""
 			for i, arg := range args {
@@ -109,7 +109,7 @@ func (g *GitExecutor) Execute(args ...string) (string, error) {
 			}
 			return "", &MergeConflictError{Branch: currentBranch, Target: targetBranch}
 		}
-		
+
 		if strings.Contains(stderrStr, "could not read from remote repository") {
 			remote := "origin"
 			for i, arg := range args {
@@ -120,7 +120,7 @@ func (g *GitExecutor) Execute(args ...string) (string, error) {
 			}
 			return "", &RemoteError{Remote: remote, Err: err}
 		}
-		
+
 		// Return generic GitError for unrecognized errors
 		return "", &GitError{
 			Command: "git",
@@ -205,7 +205,7 @@ func (g *GitExecutor) ListBranches() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	branches := []string{}
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	for _, line := range lines {
@@ -215,7 +215,7 @@ func (g *GitExecutor) ListBranches() ([]string, error) {
 		}
 		branches = append(branches, branch)
 	}
-	
+
 	return branches, nil
 }
 
@@ -225,7 +225,7 @@ func (g *GitExecutor) ListRemoteBranches() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	branches := []string{}
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	for _, line := range lines {
@@ -234,6 +234,6 @@ func (g *GitExecutor) ListRemoteBranches() ([]string, error) {
 			branches = append(branches, branch)
 		}
 	}
-	
+
 	return branches, nil
 }
