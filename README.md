@@ -1,19 +1,22 @@
 # Stacksmith
 
-  <img src="https://vhs.charm.sh/vhs-4MMT5EmmcjU7WdktwoOm8c.gif" alt="Made with VHS">
-  <p align="center">
-    <a href="https://vhs.charm.sh">
-      <img src="https://stuff.charm.sh/vhs/badge.svg">
-    </a>
-  </p>
+<img src="https://vhs.charm.sh/vhs-4MMT5EmmcjU7WdktwoOm8c.gif" alt="Made with VHS">
+<p align="center">
+  <a href="https://vhs.charm.sh">
+    <img src="https://stuff.charm.sh/vhs/badge.svg">
+  </a>
+</p>
 
-  <p align="center">
+<p align="center">
   <a href="https://github.com/mubbie/stacksmith/releases">
     <img src="https://img.shields.io/github/v/release/mubbie/stacksmith" alt="Latest Release">
   </a>
   <img src="https://img.shields.io/github/license/mubbie/stacksmith" alt="License">
   <img src="https://github.com/mubbie/stacksmith/actions/workflows/release.yml/badge.svg" alt="CI">
   <img src="https://img.shields.io/badge/built%20with-Go-00ADD8?logo=go" alt="Built with Go">
+  <a href="https://goreportcard.com/report/github.com/mubbie/stacksmith">
+    <img src="https://goreportcard.com/badge/github.com/mubbie/stacksmith" alt="Go Report Card">
+  </a>
   <img src="https://img.shields.io/github/stars/mubbie/stacksmith?style=social" alt="GitHub Stars">
 </p>
 
