@@ -111,7 +111,7 @@ jobs:
               InstallerUrl: https://github.com/mubbie/stacksmith/releases/download/v${VERSION}/stacksmith-setup.exe
               InstallerSha256: ${INSTALLER_SHA}
           ManifestType: installer
-          ManifestVersion: 1.4.0
+          ManifestVersion: 1.10.0
           EOF
 
           cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.locale.en-US.yaml << EOF
@@ -123,7 +123,7 @@ jobs:
           License: MIT
           ShortDescription: Ultralight Artisan Git Stacking Tool
           ManifestType: defaultLocale
-          ManifestVersion: 1.4.0
+          ManifestVersion: 1.10.0
           EOF
 
           cat > ./manifests/m/Mubbie/Stacksmith/${VERSION}/Mubbie.Stacksmith.yaml << EOF
@@ -131,7 +131,7 @@ jobs:
           PackageVersion: ${VERSION}
           DefaultLocale: en-US
           ManifestType: version
-          ManifestVersion: 1.4.0
+          ManifestVersion: 1.10.0
           EOF
 
       - name: Create Fork via API
