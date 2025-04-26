@@ -167,8 +167,14 @@ func (g *GitExecutor) CheckoutBranch(branch string) error {
 
 // CreateBranch creates a new branch from a parent branch
 func (g *GitExecutor) CreateBranch(newBranch, parentBranch string) error {
+	// Create the branch with Git
 	_, err := g.Execute("checkout", "-b", newBranch, parentBranch)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Also record the relationship
+	return g.RecordBranchRelationship(newBranch, parentBranch)
 }
 
 // RebaseBranch rebases the current branch onto another branch
