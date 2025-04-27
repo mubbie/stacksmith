@@ -195,3 +195,79 @@ func (p *Printer) EndProgress(result string) {
 	fmt.Printf("%s%s%s ⌛ %s\n",
 		Green, p.AppName, Reset, result)
 }
+
+// RenderBranchStack renders a branch stack as a text tree
+func (p *Printer) RenderBranchStack(stack *core.BranchStack) string {
+	var sb strings.Builder
+
+	// Render each root node and its children
+	for i, root := range stack.Roots {
+		isLast := i == len(stack.Roots)-1
+		p.renderBranchNode(&sb, root, "", isLast)
+	}
+
+	return sb.String()
+}
+
+// renderBranchNode renders a single branch node and its children
+func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, prefix string, isLast bool) {
+	// Choose the connector based on whether this is the last child
+	connector := "├── "
+	if isLast {
+		connector = "└── "
+	}
+
+	// Determine branch color/style
+	branchColor := ""
+	if node.IsHead {
+		branchColor = Green // Current branch
+	} else if node.Behind > 0 {
+		branchColor = Yellow // Out of sync
+	} else {
+		branchColor = Blue // Regular branch
+	}
+
+	// Branch name
+	branchName := fmt.Sprintf("%-20s", node.Name) // Pad to 20 chars for alignment
+
+	// Create status indicators section with proper spacing
+	var statusParts []string
+
+	// HEAD indicator
+	if node.IsHead {
+		statusParts = append(statusParts, "*")
+	}
+
+	// Sync status indicator with ahead/behind counts
+	if node.Behind > 0 || node.Ahead > 0 {
+		statusParts = append(statusParts, fmt.Sprintf("🔁 (+%d/-%d)", node.Ahead, node.Behind))
+	}
+
+	// Merged indicator
+	if node.IsMerged {
+		statusParts = append(statusParts, "✔")
+	}
+
+	// Combine status indicators
+	statusText := ""
+	if len(statusParts) > 0 {
+		statusText = strings.Join(statusParts, " ")
+	}
+
+	// Write the line
+	sb.WriteString(prefix + connector + branchColor + branchName + Reset + statusText + "\n")
+
+	// calculate prefix for children
+	newPrefix := prefix
+	if isLast {
+		newPrefix += "    " // Space after last item
+	} else {
+		newPrefix += "│   " // Vertical line for non-last items
+	}
+
+	// Render children recursively
+	for i, child := range node.Children {
+		isLastChild := i == len(node.Children)-1
+		p.renderBranchNode(sb, child, newPrefix, isLastChild)
+	}
+}

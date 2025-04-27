@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -236,4 +237,52 @@ func (g *GitExecutor) ListRemoteBranches() ([]string, error) {
 	}
 
 	return branches, nil
+}
+
+// IsBranchMerged checks if a branch has been merged into another branch
+func (g *GitExecutor) IsBranchMerged(branch, target string) (bool, error) {
+	// Check if all commits in branch are contained in target
+	output, err := g.Execute("branch", "--merged", target)
+	if err != nil {
+		return false, err
+	}
+
+	// Parse the output to find the branch
+	branches := strings.Split(strings.TrimSpace(output), "\n")
+	for _, b := range branches {
+		b = strings.TrimSpace(b)
+		b = strings.TrimPrefix(b, "* ")
+		if b == branch {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// GetAheadBehind returns the ahead/behind counts for two branches
+func (g *GitExecutor) GetAheadBehind(branch, target string) (int, int, error) {
+	// Run: git rev-list --left-right --count <target>...<branch>
+	output, err := g.Execute("rev-list", "--left-right", "--count", target+"..."+branch)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	// Parse output: "<behind>\t<ahead>"
+	parts := strings.Split(strings.TrimSpace(output), "\t")
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("unexpected rev-list output format")
+	}
+
+	behind, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	ahead, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return ahead, behind, nil
 }
