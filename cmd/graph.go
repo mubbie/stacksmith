@@ -24,7 +24,7 @@ var graphCmd = &cobra.Command{
 		stack, err := git.BuildBranchStack()
 		if err != nil {
 			printer.Error(fmt.Sprintf("Error analyzing branch structure: %s", err))
-			
+
 			// Fall back to traditional git graph if stack analysis fails
 			graph, _ := git.ShowGraph()
 			fmt.Println(graph)
@@ -38,18 +38,17 @@ var graphCmd = &cobra.Command{
 		}
 
 		// Render the branch stack
-		// Render the branch stack
 		branchTree := printer.RenderBranchStack(stack)
 		fmt.Println(branchTree)
-		
+
 		printer.Divider()
-		printer.Info("Legend: " + 
-		             "👈 HEAD branch • " + 
-		             "✔ merged into parent • " + 
-		             "🔁 (+n/-m) ahead/behind counts • " +
-		             "⚠ orphaned branch")
-		printer.Info("Branch relationships stored in .stacksmith/stack.yml")
-		printer.Info("Tip: For a more detailed view, try 'stacksmith tui' (coming soon)")
+		printer.Info("LEGEND: " +
+			"👈 HEAD branch • " +
+			"✅ Merged into parent • " +
+			"🔄 (⬆️  n / ⬇️  m) ahead/behind counts • " +
+			"⚠️  Orphaned Branch")
+		printer.Info("Branch relationships stored in .git/stacksmith/stack.yml")
+		printer.Info("Tip: For a more detailed view, try 'stacksmith TUI' (coming soon)")
 	},
 }
 

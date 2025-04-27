@@ -47,7 +47,7 @@ func (p *Printer) Success(message string) {
 
 // Info prints an info message with icon
 func (p *Printer) Info(message string) {
-	fmt.Printf("%s%s%s ℹ️ %s\n", Blue, p.AppName, Reset, message)
+	fmt.Printf("%s%s%s ℹ️  %s\n", Blue, p.AppName, Reset, message)
 }
 
 // Warning prints a warning message with icon
@@ -247,7 +247,7 @@ func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, p
 	}
 
 	// Branch name with padding for alignment
-	branchName := fmt.Sprintf("%-20s", node.Name)
+	branchName := fmt.Sprintf("%-30s", node.Name)
 
 	// Create status indicators section with proper spacing
 	var statusParts []string
@@ -259,12 +259,12 @@ func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, p
 
 	// Sync status indicator with ahead/behind counts
 	if node.Behind > 0 || node.Ahead > 0 {
-		statusParts = append(statusParts, fmt.Sprintf("🔁 (+%d/-%d)", node.Ahead, node.Behind))
+		statusParts = append(statusParts, fmt.Sprintf("🔁 (⬆️  %d / ⬇️  %d)", node.Ahead, node.Behind))
 	}
 
 	// Merged indicator
 	if node.IsMerged {
-		statusParts = append(statusParts, "✔")
+		statusParts = append(statusParts, "✅")
 	}
 
 	// Orphan indicator
