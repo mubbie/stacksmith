@@ -56,8 +56,8 @@ func (g *GitExecutor) SaveStackConfig(config *StackConfig) error {
 	}
 	rootDir = strings.TrimSpace(rootDir)
 
-	// Create .stacksmith directory if it doesn't exist
-	stacksmithDir := filepath.Join(rootDir, ".stacksmith")
+	// Create .git/stacksmith directory if it doesn't exist
+	stacksmithDir := filepath.Join(rootDir, ".git", "stacksmith")
 	if err := os.MkdirAll(stacksmithDir, 0755); err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (g *GitExecutor) LoadStackConfig() (*StackConfig, error) {
 	rootDir = strings.TrimSpace(rootDir)
 
 	// Construct file path
-	filePath := filepath.Join(rootDir, ".stacksmith", "stack.yml")
+	filePath := filepath.Join(rootDir, ".git", "stacksmith", "stack.yml")
 
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
