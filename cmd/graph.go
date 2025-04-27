@@ -47,7 +47,7 @@ var graphCmd = &cobra.Command{
 			"✅ Merged into parent • " +
 			"🔄 (⬆️  n / ⬇️  m) ahead/behind counts • " +
 			"⚠️  Orphaned Branch")
-		printer.Info("Branch relationships stored in .git/stacksmith/stack.yml")
+		printer.Info("Branch relationships stored in `.git/stacksmith/stack.yml`")
 		printer.Info("Tip: For a more detailed view, try 'stacksmith TUI' (coming soon)")
 	},
 }
