@@ -1,0 +1,9 @@
+# Stacksmith branch relationships
+# Last updated: 2025-04-26 07:52:02
+
+relationships:
+    fix-stack-command-parent-branch-bug: implement-stack-graph
+    implement-stack-graph: main
+metadata:
+    main_branch: main
+    last_updated: 2025-04-26T07:52:02.00996-07:00

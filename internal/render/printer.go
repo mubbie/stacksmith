@@ -202,8 +202,25 @@ func (p *Printer) RenderBranchStack(stack *core.BranchStack) string {
 
 	// Render each root node and its children
 	for i, root := range stack.Roots {
-		isLast := i == len(stack.Roots)-1
+		isLast := i == len(stack.Roots)-1 && len(stack.Orphans) == 0
 		p.renderBranchNode(&sb, root, "", isLast)
+	}
+
+	// Render orphaned branches under special section if any
+	if len(stack.Orphans) > 0 {
+		// Add divider if we have both roots and orphans
+		if len(stack.Roots) > 0 {
+			sb.WriteString("\n")
+		}
+
+		// Add header for orphans
+		sb.WriteString(Yellow + "⚠️ Orphaned Branches:" + Reset + "\n")
+
+		// Render each orphan
+		for i, orphan := range stack.Orphans {
+			isLast := i == len(stack.Orphans)-1
+			p.renderBranchNode(&sb, orphan, "", isLast)
+		}
 	}
 
 	return sb.String()
@@ -221,21 +238,23 @@ func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, p
 	branchColor := ""
 	if node.IsHead {
 		branchColor = Green // Current branch
+	} else if node.IsOrphan {
+		branchColor = Yellow // Orphaned branch
 	} else if node.Behind > 0 {
 		branchColor = Yellow // Out of sync
 	} else {
 		branchColor = Blue // Regular branch
 	}
 
-	// Branch name
-	branchName := fmt.Sprintf("%-20s", node.Name) // Pad to 20 chars for alignment
+	// Branch name with padding for alignment
+	branchName := fmt.Sprintf("%-20s", node.Name)
 
 	// Create status indicators section with proper spacing
 	var statusParts []string
 
 	// HEAD indicator
 	if node.IsHead {
-		statusParts = append(statusParts, "*")
+		statusParts = append(statusParts, "👈")
 	}
 
 	// Sync status indicator with ahead/behind counts
@@ -248,6 +267,11 @@ func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, p
 		statusParts = append(statusParts, "✔")
 	}
 
+	// Orphan indicator
+	if node.IsOrphan {
+		statusParts = append(statusParts, "⚠️ orphaned")
+	}
+
 	// Combine status indicators
 	statusText := ""
 	if len(statusParts) > 0 {
@@ -257,7 +281,7 @@ func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, p
 	// Write the line
 	sb.WriteString(prefix + connector + branchColor + branchName + Reset + statusText + "\n")
 
-	// calculate prefix for children
+	// Calculate prefix for children
 	newPrefix := prefix
 	if isLast {
 		newPrefix += "    " // Space after last item
@@ -265,7 +289,7 @@ func (p *Printer) renderBranchNode(sb *strings.Builder, node *core.BranchNode, p
 		newPrefix += "│   " // Vertical line for non-last items
 	}
 
-	// Render children recursively
+	// Render children
 	for i, child := range node.Children {
 		isLastChild := i == len(node.Children)-1
 		p.renderBranchNode(sb, child, newPrefix, isLastChild)

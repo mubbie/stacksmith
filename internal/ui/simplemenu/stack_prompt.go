@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mubbie/stacksmith/internal/core"
 	"github.com/mubbie/stacksmith/internal/ui/styles"
 )
 
@@ -20,11 +21,21 @@ type StackPromptModel struct {
 
 // NewStackPromptModel creates a new stack prompt model
 func NewStackPromptModel() StackPromptModel {
+	// Create Git executor
+	git := core.NewGitExecutor("")
+
+	// Get current branch as default parent
+	defaultParent := "main" // Fallback default
+	currentBranch, err := git.GetCurrentBranch()
+	if err == nil && currentBranch != "" {
+		defaultParent = currentBranch
+	}
+
 	return StackPromptModel{
 		BasePrompt: BasePrompt{
 			Title: "🪵 Create a new branch",
 		},
-		ParentBranch: "main", // Default parent branch
+		ParentBranch: defaultParent, // Use current branch as default
 		CurrentField: 0,
 		CursorPos:    0,
 	}

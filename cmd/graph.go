@@ -12,7 +12,7 @@ import (
 var graphCmd = &cobra.Command{
 	Use:   "graph",
 	Short: "🌳 Show commit graph (git log --graph)",
-	Long:  `Visualize branch structure using git log --graph.`,
+	Long:  `Visualize the branch stack structure showing parent-child relationships.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		printer := render.NewPrinter("stacksmith")
 		git := core.NewGitExecutor("")
@@ -32,20 +32,23 @@ var graphCmd = &cobra.Command{
 		}
 
 		// No branches or empty repo
-		if len(stack.Roots) == 0 {
+		if len(stack.Roots) == 0 && len(stack.Orphans) == 0 {
 			printer.Info("No branches found or unable to determine branch relationships.")
 			return
 		}
 
+		// Render the branch stack
 		// Render the branch stack
 		branchTree := printer.RenderBranchStack(stack)
 		fmt.Println(branchTree)
 		
 		printer.Divider()
 		printer.Info("Legend: " + 
-             "* HEAD branch • " + 
-             "✔ merged into parent • " + 
-             "🔁 (+n/-m) ahead/behind counts")
+		             "👈 HEAD branch • " + 
+		             "✔ merged into parent • " + 
+		             "🔁 (+n/-m) ahead/behind counts • " +
+		             "⚠ orphaned branch")
+		printer.Info("Branch relationships stored in .stacksmith/stack.yml")
 		printer.Info("Tip: For a more detailed view, try 'stacksmith tui' (coming soon)")
 	},
 }
