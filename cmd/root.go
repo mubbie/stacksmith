@@ -93,7 +93,7 @@ func launchMainMenu() {
 
 		// Ask user whether to return to menu or exit
 		fmt.Println()
-		fmt.Print("Would you like to return to the Stacksmith menu? [Y/n]: ")
+		fmt.Print("Type 'n' or 'no' to exit or any other key to return to the Stacksmith menu: ")
 		var response string
 		fmt.Scanln(&response)
 
@@ -102,6 +102,7 @@ func launchMainMenu() {
 			return // Exit the function, which exits the application
 		}
 
-		fmt.Println() // Add extra newline for spacing
+		// Any other input returns to the menu
+		fmt.Println()
 	}
 }
